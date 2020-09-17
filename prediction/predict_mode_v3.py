@@ -18,14 +18,14 @@ class PredictModeV3(object):
 
     def __init__(self):
 
-        self.to_save_pred_mode = True
+        # self.to_save_pred_mode = True
         self.to_plot_pred_mode = True
 
-        # self.to_save_pred_mode = False
+        self.to_save_pred_mode = False
         # self.to_plot_pred_mode = False
 
-        # self.plot_probability = True
-        self.plot_probability = False
+        self.plot_probability = True
+        # self.plot_probability = False
 
         # Which scenario to predict
         self.scenario_predict = "intersection"
@@ -49,23 +49,29 @@ class PredictModeV3(object):
         if self.scenario_predict == "intersection":
             # self.file_name_predict = ['car_16_vid_09.csv']
             self.file_name_predict = ['car_16_vid_09.csv', 'car_20_vid_09.csv', 'car_29_vid_09.csv',
-                                           'car_36_vid_11.csv', 'car_50_vid_03.csv', 'car_112_vid_11.csv',
-                                           'car_122_vid_11.csv',
-                                           'car_38_vid_02.csv', 'car_52_vid_07.csv', 'car_73_vid_02.csv',
-                                           'car_118_vid_11.csv']
+                                      'car_36_vid_11.csv', 'car_50_vid_03.csv', 'car_112_vid_11.csv',
+                                      'car_122_vid_11.csv',
+                                      'car_38_vid_02.csv', 'car_52_vid_07.csv', 'car_73_vid_02.csv',
+                                      'car_118_vid_11.csv']
         elif self.scenario_predict == "roundabout":
             self.file_name_predict = ['car_27.csv', 'car_122.csv',
                                       'car_51.csv', 'car_52.csv', 'car_131.csv', 'car_155.csv',
                                       'car_15.csv', 'car_28.csv', 'car_34.csv', 'car_41.csv', 'car_50.csv',
                                       'car_61.csv', 'car_75.csv', 'car_80.csv']
 
-    def predict_mode(self):
-
         # Format of action_bound_mode is
         # [Mode name, acc_min, acc_max, omega_min, omega_max]
-        self.action_bound_mode = ClusteringV3().get_clustering()
+        # self.action_bound_mode = ClusteringV3().get_clustering()
+        # Based on previous clustering results, we can directly use here
+        self.action_bound_mode = [['Mode 0', -2.1636535520436913, -0.513334427671972, -0.1837438265538242, 0.14882615871461266],
+                                  ['Mode 1', -0.5555900044464422, 0.6368061679286323, -0.10672453116249359, 0.0937009227063485],
+                                  ['Mode 2', 0.5675504765784698, 2.3678900486350067, -0.1821945586149165, 0.2148259198174678],
+                                  ['Mode 3', -1.0193550912212208, 1.193433834690333, 0.06677024971223634, 0.2867006433643877],
+                                  ['Mode 4', -0.7528328172149713, 1.4532616101602789, -0.3362774352874647, -0.07441345056922757],
+                                  ['Mode 5', -1.3550939085936016, 1.8479464013576148, 0.23781317772082264, 0.5235987755982989]]
+        # print(self.action_bound_mode)
 
-        print(self.action_bound_mode)
+    def predict_mode(self):
 
         for file in self.file_name_predict:
             # Get raw action data from traj file
@@ -214,8 +220,8 @@ class PredictModeV3(object):
         for i in range(len(mode_probability)):
             mode_probability[i] = mode_probability[i] / num_sum
 
-        print(mode_probability)
-        print(np.max(mode_probability))
+        # print(mode_probability)
+        # print(np.max(mode_probability))
 
         # Currently, choose mode as the maximum probability
         mode = mode_probability.index(max(mode_probability))
