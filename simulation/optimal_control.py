@@ -1,8 +1,11 @@
 import math
 import numpy as np
+import time
 
 from prediction.process_prediction_v3 import ProcessPredictionV3
 from prediction.predict_mode_v3 import PredictModeV3
+
+from scipy.interpolate import RegularGridInterpolator
 
 class OptimalControl(object):
     """"
@@ -37,10 +40,20 @@ class OptimalControl(object):
         # Data path
         self.data_path = "/home/anjianl/Desktop/project/optimized_dp/data/brs/0910/"
 
+        # Computational bound for valfunc and optctrl
+        # (x_rel, y_rel, psi_rel, v_h, v_r)
+        self.x_rel_bound = [-10, 10]
+        self.y_rel_bound = [-10, 10]
+        self.psi_rel_bound = [-math.pi, math.pi]
+        self.v_h_bound = [0, 17]
+        self.v_r_bound = [0, 17]
+
     def get_optctrl(self):
 
         # Get relative states
         self.rel_states = self.get_rel_states(self.human_curr_states, self.robot_curr_states)
+
+        print("relative states are", self.rel_states)
 
         # Get human's driving mode
         self.h_drv_mode, self.h_drv_mode_pro = self.get_drv_mode(self.human_future_states)
@@ -54,11 +67,18 @@ class OptimalControl(object):
         self.beta_r = np.load(self.beta_r_path)
         self.a_r = np.load(self.a_r_path)
 
-        print("valfunc size", np.shape(self.valfunc))
-        print("beta_r size", np.shape(self.beta_r))
-        print("a_r size", np.shape(self.a_r))
+        # print("valfunc size", np.shape(self.valfunc))
+        # print("beta_r size", np.shape(self.beta_r))
+        # print("a_r size", np.shape(self.a_r))
 
         # Interpolation
+        self.curr_valfunc = self.interpolate(self.valfunc, self.rel_states)
+        self.curr_optctrl_beta_r = self.interpolate(self.beta_r, self.rel_states)
+        self.curr_optctrl_a_r = self.interpolate(self.a_r, self.rel_states)
+        print(self.check_valid(self.rel_states))
+        print("current value function is", self.curr_valfunc)
+        print("current beta_r", self.curr_optctrl_beta_r)
+        print("current a_r", self.curr_optctrl_a_r)
 
     def get_rel_states(self, human_curr_states, robot_curr_states):
 
@@ -94,14 +114,52 @@ class OptimalControl(object):
 
         return mode_num, mode_probability
 
+    def check_valid(self, rel_states):
+
+        # (x_rel, y_rel, psi_rel, v_h, v_r)
+
+        if (self.x_rel_bound[0] <= rel_states['x_rel'] <= self.x_rel_bound[1]) and \
+                (self.y_rel_bound[0] <= rel_states['y_rel'] <= self.y_rel_bound[1]) and \
+                (self.psi_rel_bound[0] <= rel_states['psi_rel'] <= self.psi_rel_bound[1]) and \
+                (self.v_h_bound[0] <= rel_states['v_h'] <= self.v_h_bound[1]) and \
+                (self.v_r_bound[0] <= rel_states['v_r'] <= self.v_r_bound[1]):
+            return True
+        else:
+            return False
+
+    def interpolate(self, data, point):
+
+        x_rel = np.linspace(-10, 10, num=41)
+        y_rel = np.linspace(-10, 10, num=41)
+        psi_rel = np.linspace(-math.pi, math.pi - math.pi / 18, num=36)
+        v_h = np.linspace(0, 17, num=35)
+        v_r = np.linspace(0, 17, num=35)
+
+        my_interpolating_function = RegularGridInterpolator((x_rel, y_rel, psi_rel, v_h, v_r), data)
+
+        curr_x_rel = point['x_rel']
+        curr_y_rel = point['y_rel']
+        curr_psi_rel = point['psi_rel']
+        curr_v_h = point['v_h']
+        curr_v_r = point['v_r']
+
+        curr_point = np.asarray([curr_x_rel, curr_y_rel, curr_psi_rel, curr_v_h, curr_v_r])
+
+        return my_interpolating_function(curr_point)
+
+
 if __name__ == "__main__":
 
-    hcs = {'x_h': 2, 'y_h': 3, 'v_h': 3, 'psi_h': math.pi / 6}
-    rcs = {'x_r': 3, 'y_r': 5, 'v_r': 6, 'psi_r': math.pi / 4}
+    hcs = {'x_h': 3, 'y_h': 5, 'v_h': 6, 'psi_h': - math.pi / 2}
+    rcs = {'x_r': 3, 'y_r': 3, 'v_r': 0, 'psi_r': 0}
     hfs = {'x_t': [950.62, 951.22, 951.82, 952.42, 953.02, 953.62, 954.22, 954.83, 955.43, 956.03, 956.64, 957.24],
            'y_t': [986.06, 986.02, 985.99, 985.95, 985.91, 985.88, 985.84, 985.82, 985.78, 985.75, 985.7, 985.68],
            'v_t': [6.297153722000001, 6.301182825, 6.299214634, 6.29124924, 6.27629644, 6.254337775, 6.224393625,
                    6.187466767999999, 6.143547265, 6.092635555, 6.035747675, 5.971871147000001]}
 
+    start_time = time.time()
     optctrl = OptimalControl(human_curr_states=hcs, robot_curr_states=rcs, human_future_states=hfs)
     optctrl.get_optctrl()
+
+    end_time = time.time()
+    print("overal all time is", end_time - start_time)
