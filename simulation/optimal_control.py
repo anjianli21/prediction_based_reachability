@@ -29,27 +29,31 @@ class OptimalControl(object):
 
     """
 
-    def __init__(self, human_curr_states, robot_curr_states, h_drv_mode, h_drv_mode_pro):
+    def __init__(self, human_curr_states, robot_curr_states, h_drv_mode, h_drv_mode_pro, use_prediction):
 
         # human_curr_states = {x_h, y_h, v_h, psi_h}
         self.human_curr_states = human_curr_states
         # robot_curr_states = {x_r, y_r, v_r, psi_r, beta_r}
         self.robot_curr_states = robot_curr_states
         # human_future_states = {x_h_t, y_h_t}
-        self.h_drv_mode = h_drv_mode
-        self.h_drv_mode_pro = h_drv_mode_pro
+        if use_prediction:
+            self.h_drv_mode = h_drv_mode
+            self.h_drv_mode_pro = h_drv_mode_pro
+        else:
+            self.h_drv_mode = -1
+            self.h_drv_mode_pro = [0, 0, 0, 0, 0, 0]
 
         # Data path
         if '/Users/anjianli/anaconda3/envs/hcl-env/lib/python3.8' not in sys.path:
-            self.data_path = "/home/anjianl/Desktop/project/optimized_dp/data/brs/0910/"
+            self.data_path = "/home/anjianl/Desktop/project/optimized_dp/data/brs/0910-correct/"
         else:
-            self.data_path = "/Users/anjianli/Desktop/robotics/project/optimized_dp/data/brs/0910-best/"
+            self.data_path = "/Users/anjianli/Desktop/robotics/project/optimized_dp/data/brs/0910-correct/"
 
         # Computational bound for valfunc and optctrl
         # (x_rel, y_rel, psi_rel, v_h, v_r)
         self.x_rel_bound = [-10, 10]
         self.y_rel_bound = [-10, 10]
-        self.psi_rel_bound = [-math.pi, math.pi - math.pi / 18] # TODO: the right bound for psi is not correct!
+        self.psi_rel_bound = [-math.pi, math.pi]
         self.v_h_bound = [0, 17]
         self.v_r_bound = [0, 17]
 
@@ -144,7 +148,7 @@ class OptimalControl(object):
 
         x_rel = np.linspace(-10, 10, num=41)
         y_rel = np.linspace(-10, 10, num=41)
-        psi_rel = np.linspace(-math.pi, math.pi - math.pi / 18, num=36)
+        psi_rel = np.linspace(-math.pi, math.pi, num=37)
         v_h = np.linspace(0, 17, num=35)
         v_r = np.linspace(0, 17, num=35)
 

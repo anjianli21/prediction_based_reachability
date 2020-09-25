@@ -3,6 +3,7 @@ import sys
 sys.path.append("/Users/anjianli/Desktop/robotics/project/optimized_dp")
 from matplotlib import pyplot as plt
 from matplotlib import animation, rc
+from argparse import ArgumentParser
 
 import pandas
 import scipy.io
@@ -45,18 +46,49 @@ class Simulator(object):
             self.file_dir_intersection = '/Users/anjianli/Desktop/robotics/project/optimized_dp/data/intersection-data'
             self.file_dir_roundabout = '/Users/anjianli/Desktop/robotics/project/optimized_dp/data/roundabout-data'
 
+        # Trial 1
         self.huamn_car_file_name_intersection = 'car_20_vid_09.csv'
         self.robot_car_file_name_intersection = 'car_36_vid_11_refPath.csv'
+        self.human_start_step = 180
+        self.robot_target_speed = 8
+        self.robot_start_step = 0
+
+        # self.human_start_step = 150
+        # self.robot_start_step = 60
+        # self.robot_target_speed = 1
+
+        # # Trial 2
+        # self.huamn_car_file_name_intersection = 'car_112_vid_11.csv'
+        # self.robot_car_file_name_intersection = 'car_73_vid_02_refPath.csv'
+        # self.human_start_step = 230
+        # self.robot_target_speed = 5
+        # self.robot_start_step = 0
+
+        # self.human_start_step = 230
+        # self.robot_target_speed = 1
+        # self.robot_start_step = 79
+
+        self.poly_num = 30
 
         self.show_animation = True
-        self.poly_num = 30
+        # self.show_animation = False
 
         self.use_safe_control = True
         # self.use_safe_control = False
 
+        self.use_prediction = True
+        # self.use_prediction = False
+
     def simulate(self):
 
+        ################### PARSING ARGUMENTS FROM USERS #####################
+
+        # parser = ArgumentParser()
+        # parser.add_argument("-safe_controller", type=bool)
+        # args = parser.parse_args()
+
         print("Start simulating")
+        # print(args.safe_controller)
 
         # Set time
         tMax = 100
@@ -68,18 +100,17 @@ class Simulator(object):
         # Read ref path as robot_car_traj
         robot_car_traj_ref = self.get_traj_from_ref_path(filename=self.robot_car_file_name_intersection)
 
-        # Plot current traj
-
-
         # Init human state for simulation
-        human_start_step = 140
+        human_start_step = self.human_start_step
         x_h_init, y_h_init, psi_h_init, v_h_init = self.init_human_state(human_car_traj, human_start_step)
         x_h_list, y_h_list, psi_h_list, v_h_list = [x_h_init], [y_h_init], [psi_h_init], [v_h_init]
         human_car = HumanState(x=x_h_init, y=y_h_init, psi=psi_h_init, v=v_h_init, ref_path=human_car_traj)
 
         # Init robot car object for simulation
-        target_speed = 5
-        x_r_init, y_r_init, psi_r_init, v_r_init = self.init_robot_state(robot_car_traj_ref)
+        robot_start_step = self.robot_start_step
+        target_speed = self.robot_target_speed
+        x_r_init, y_r_init, psi_r_init, v_r_init = self.init_robot_state(robot_car_traj_ref, robot_start_step)
+        v_r_init = self.robot_target_speed
         x_r_list, y_r_list, psi_r_list, v_r_list = [x_r_init], [y_r_init], [psi_r_init], [v_r_init]
         robot_car = RobotState(x=x_r_init, y=y_r_init, yaw=psi_r_init, v=v_r_init)
 
@@ -97,25 +128,29 @@ class Simulator(object):
         min_dist = 100
         while curr_t < tMax and last_idx > target_idx and curr_step_human < len(human_car_traj['x_t']) - 2:
 
-            # Get predicted trajectory of human car
-            mode_num, mode_name, mode_probability = self.get_human_car_prediction(human_car_traj, curr_step_human)
+            try:
+                # Get predicted trajectory of human car
+                mode_num, mode_name, mode_probability = self.get_human_car_prediction(human_car_traj, curr_step_human)
+            except IndexError:
+                print("human car trajectory is finished")
+                break
 
             # # Get reachability value function and optimal control for robot car
             rel_states, val_func, optctrl_beta_r, optctrl_a_r = OptimalControl(
                 human_curr_states={'x_h': human_car.x_h, 'y_h': human_car.y_h, 'psi_h': human_car.psi_h, 'v_h': human_car.v_h},
                 robot_curr_states={'x_r': robot_car.x, 'y_r': robot_car.y, 'psi_r': robot_car.yaw, 'v_r': robot_car.v},
-                h_drv_mode=mode_num, h_drv_mode_pro=mode_probability).get_optctrl()
+                h_drv_mode=mode_num, h_drv_mode_pro=mode_probability, use_prediction=self.use_prediction).get_optctrl()
 
             curr_min_dist = np.sqrt(rel_states['x_rel'] ** 2 + rel_states['y_rel'] ** 2)
             min_dist = min(curr_min_dist, min_dist)
+            print("minimum distance is ", min_dist)
 
-
-            if self.use_safe_control:
+            if self.use_safe_control is True:
                 # Check if reachability safe controller should be used
                 if val_func < 0:
                     print("reachable safe controller in effect!")
-                    print("human car mode is", mode_name)
-                    print("relative states", rel_states)
+                    # print("human car mode is", mode_name)
+                    # print("relative states", rel_states)
                     print("optimal control beta is", optctrl_beta_r, " acceleration is", optctrl_a_r)
                     robot_car.safe_update(optctrl_beta_r, optctrl_a_r)
                     # time.sleep(3)
@@ -154,30 +189,27 @@ class Simulator(object):
                 # for stopping simulation with the esc key.
                 plt.gcf().canvas.mpl_connect('key_release_event',
                                              lambda event: [exit(0) if event.key == 'escape' else None])
-                plt.plot(cx, cy, ".y", label="course")
+                plt.plot(cx, cy, ".c", label="robot planning")
                 plt.plot(x_r_list, y_r_list, "-b", label="robot trajectory")
                 plt.plot(x_h_list, y_h_list, "-r", label="human trajectory")
-                plt.plot(x_r_list[-1], y_r_list[-1], "xg", label="target")
-                plt.plot(x_h_list[-1], y_h_list[-1], "xr", label="target")
+                plt.plot(x_r_list[-1], y_r_list[-1], "xg", label="robot pos")
+                plt.plot(x_h_list[-1], y_h_list[-1], "xr", label="human pos")
                 plt.scatter(intersection_curbs[0], intersection_curbs[1], color='black', linewidths=0.3)
                 plt.axis("equal")
+                plt.legend()
                 plt.grid(True)
-                if val_func >= 0:
-                    plt.title("robot speed (m/s):" + str(robot_car.v)[:4] + ", " + mode_name)
+                if val_func < 0 and self.use_safe_control is True:
+                    plt.title(
+                        "robot speed (m/s):" + str(robot_car.v)[:4] + ", human mode:" + mode_name + ", safe control in effect")
                 else:
-                    plt.title("robot speed (m/s):" + str(robot_car.v)[:4] + ", " + mode_name + ", safe control in effect")
+                    plt.title("robot speed (m/s):" + str(robot_car.v)[:4] + ", human mode:" + mode_name)
                 plt.pause(0.1)
+                if self.use_prediction:
+                    plt.savefig("/Users/anjianli/Desktop/robotics/project/optimized_dp/result/simulation/2/t_{:.2f}_pred.png".format(curr_t))
+                else:
+                    plt.savefig("/Users/anjianli/Desktop/robotics/project/optimized_dp/result/simulation/2/t_{:.2f}_nopred.png".format(curr_t))
 
         print("minimum distance is ", min_dist)
-        if self.show_animation:
-            plt.plot(x_r_list, y_r_list, "-b", label="robot trajectory")
-            plt.plot(x_h_list, y_h_list, "-r", label="human trajectory")
-            plt.plot(x_r_list[-1], y_r_list[-1], "xg", label="target")
-            plt.plot(x_h_list[-1], y_h_list[-1], "xr", label="target")
-            plt.scatter(intersection_curbs[0], intersection_curbs[1], color='black', linewidths=0.3)
-            plt.axis("equal")
-            plt.grid(True)
-            plt.title("robot speed (m/s):" + str(robot_car.v)[:4] + " " + mode_name)
 
 
     def get_traj_from_prediction(self, filename):
@@ -233,11 +265,11 @@ class Simulator(object):
 
         return robot_car_traj
 
-    def init_robot_state(self, robot_car_traj_ref):
+    def init_robot_state(self, robot_car_traj_ref, robot_start_step):
 
-        dx = (robot_car_traj_ref['x_t'][1] - robot_car_traj_ref['x_t'][0]) / 0.1
-        dy = (robot_car_traj_ref['y_t'][1] - robot_car_traj_ref['y_t'][0]) / 0.1
-        x_r_init, y_r_init = robot_car_traj_ref['x_t'][0], robot_car_traj_ref['y_t'][0]
+        dx = (robot_car_traj_ref['x_t'][robot_start_step+1] - robot_car_traj_ref['x_t'][robot_start_step]) / 0.1
+        dy = (robot_car_traj_ref['y_t'][robot_start_step+1] - robot_car_traj_ref['y_t'][robot_start_step]) / 0.1
+        x_r_init, y_r_init = robot_car_traj_ref['x_t'][robot_start_step], robot_car_traj_ref['y_t'][robot_start_step]
         v_r_init = np.sqrt(dx ** 2 + dy ** 2)
         psi_r_init = np.arctan2(dy, dx)
 
