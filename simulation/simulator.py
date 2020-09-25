@@ -7,9 +7,13 @@ from matplotlib import animation, rc
 import pandas
 import scipy.io
 from scipy import integrate
+import time
 
 from simulation.optimal_control import OptimalControl
 from prediction.process_prediction_v3 import ProcessPredictionV3
+from prediction.predict_mode_v3 import PredictModeV3
+from simulation.stanley_controller import *
+from simulation.human_car import *
 
 class Simulator(object):
 
@@ -44,72 +48,136 @@ class Simulator(object):
         self.huamn_car_file_name_intersection = 'car_20_vid_09.csv'
         self.robot_car_file_name_intersection = 'car_36_vid_11_refPath.csv'
 
+        self.show_animation = True
+        self.poly_num = 30
+
+        self.use_safe_control = True
+        # self.use_safe_control = False
 
     def simulate(self):
 
         print("Start simulating")
 
         # Set time
-        t0 = 0
         tMax = 100
         dt = 0.1
-        # Or step num?
-        step_num = 200
 
         # Read prediction as human car's trajectory
         human_car_traj = self.get_traj_from_prediction(filename=self.huamn_car_file_name_intersection)
 
         # Read ref path as robot_car_traj
-        robot_car_traj = self.get_traj_from_ref_path(filename=self.robot_car_file_name_intersection)
+        robot_car_traj_ref = self.get_traj_from_ref_path(filename=self.robot_car_file_name_intersection)
 
         # Plot current traj
-        self.plot(robot_car_traj, human_car_traj)
 
-        # Init human traj for simulation
-        human_init_step = 40
-        human_init = [[human_car_traj["x_t"][human_init_step], human_car_traj["y_t"][human_init_step]]]
-        simulation_human_traj = human_init
 
-        # Init robot traj for simulation
-        robot_init_step = 0
-        simulation_robot_traj = [[robot_car_traj["x_t"][robot_init_step], robot_car_traj["y_t"][robot_init_step]]]
+        # Init human state for simulation
+        human_start_step = 140
+        x_h_init, y_h_init, psi_h_init, v_h_init = self.init_human_state(human_car_traj, human_start_step)
+        x_h_list, y_h_list, psi_h_list, v_h_list = [x_h_init], [y_h_init], [psi_h_init], [v_h_init]
+        human_car = HumanState(x=x_h_init, y=y_h_init, psi=psi_h_init, v=v_h_init, ref_path=human_car_traj)
 
-        for i in range(step_num):
-            time = t0 + step_num * dt
+        # Init robot car object for simulation
+        target_speed = 5
+        x_r_init, y_r_init, psi_r_init, v_r_init = self.init_robot_state(robot_car_traj_ref)
+        x_r_list, y_r_list, psi_r_list, v_r_list = [x_r_init], [y_r_init], [psi_r_init], [v_r_init]
+        robot_car = RobotState(x=x_r_init, y=y_r_init, yaw=psi_r_init, v=v_r_init)
 
-            # Retrieve current states
-            curr_human_states = simulation_human_traj[-1]
-            curr_robot_states = simulation_robot_traj[-1]
+        # Init robot reference path
+        ax = robot_car_traj_ref['x_t'][::10]
+        ay = robot_car_traj_ref['y_t'][::10]
+        cx, cy, cyaw, ck, s = cubic_spline_planner.calc_spline_course(ax, ay, ds=0.1)
+        target_idx, _ = calc_target_index(robot_car, cx, cy)
+        last_idx = len(cx) - 1
 
-            # Estimate the state of robot and human
-            x_h, y_h, psi_h, v_h = self.get_states_from_xy()
-            x_r, y_r, psi_r, v_r = self.get_states_from_xy()
+        #################################################################################
+        # Main loop
+        curr_t = 0
+        curr_step_human = human_start_step
+        min_dist = 100
+        while curr_t < tMax and last_idx > target_idx and curr_step_human < len(human_car_traj['x_t']) - 2:
 
             # Get predicted trajectory of human car
-            x_h_pred, y_h_pred = self.get_human_car_prediction()
+            mode_num, mode_name, mode_probability = self.get_human_car_prediction(human_car_traj, curr_step_human)
 
-            # Get reachability value function and optimal control for robot car
-            val_func, optctrl_beta_r, optctrl_a_r = OptimalControl()
+            # # Get reachability value function and optimal control for robot car
+            rel_states, val_func, optctrl_beta_r, optctrl_a_r = OptimalControl(
+                human_curr_states={'x_h': human_car.x_h, 'y_h': human_car.y_h, 'psi_h': human_car.psi_h, 'v_h': human_car.v_h},
+                robot_curr_states={'x_r': robot_car.x, 'y_r': robot_car.y, 'psi_r': robot_car.yaw, 'v_r': robot_car.v},
+                h_drv_mode=mode_num, h_drv_mode_pro=mode_probability).get_optctrl()
 
-            # Update robot states
-            if val_func > 0:
-                # Check if it's on ref path:
-                if self.on_ref_path():
-                    # Only plan speed
-                    plan_speed = 1
+            curr_min_dist = np.sqrt(rel_states['x_rel'] ** 2 + rel_states['y_rel'] ** 2)
+            min_dist = min(curr_min_dist, min_dist)
+
+
+            if self.use_safe_control:
+                # Check if reachability safe controller should be used
+                if val_func < 0:
+                    print("reachable safe controller in effect!")
+                    print("human car mode is", mode_name)
+                    print("relative states", rel_states)
+                    print("optimal control beta is", optctrl_beta_r, " acceleration is", optctrl_a_r)
+                    robot_car.safe_update(optctrl_beta_r, optctrl_a_r)
+                    # time.sleep(3)
                 else:
-                    # if not on ref path, return to ref path.
-                    return_to_ref = 1
+                    # If inside, reachable set, use optimal control to integrate the states
+                    # Robot car
+                    ai = pid_control(target_speed, robot_car.v)
+                    di, target_idx = stanley_control(robot_car, cx, cy, cyaw, target_idx)
+                    robot_car.update(ai, di)
             else:
                 # If inside, reachable set, use optimal control to integrate the states
-                robot_next_step = integrate.odeint()
+                # Robot car
+                ai = pid_control(target_speed, robot_car.v)
+                di, target_idx = stanley_control(robot_car, cx, cy, cyaw, target_idx)
+                robot_car.update(ai, di)
 
-            # Update human states, just append the next prediction
-            human_next_step = 0
+            curr_t += dt
+            curr_step_human += 1
 
-            # Append the next states on simulation trajectory
-            simulation_human_traj.append(human_next_step)
-            simulation_robot_traj.append(robot_next_step)
+            x_r_list.append(robot_car.x)
+            y_r_list.append(robot_car.y)
+
+            # Human car
+            human_car.update(curr_step=curr_step_human)
+            x_h_list.append(human_car.x_h)
+            y_h_list.append(human_car.y_h)
+
+            if '/Users/anjianli/anaconda3/envs/hcl-env/lib/python3.8' in sys.path:
+                intersection_curbs = np.load(
+                    "/Users/anjianli/Desktop/robotics/project/optimized_dp/data/map/obstacle_map/intersection_curbs.npy")
+            else:
+                intersection_curbs = np.load("/home/anjianl/Desktop/project/optimized_dp/data/map/obstacle_map/intersection_curbs.npy")
+
+            if self.show_animation:  # pragma: no cover
+                plt.cla()
+                # for stopping simulation with the esc key.
+                plt.gcf().canvas.mpl_connect('key_release_event',
+                                             lambda event: [exit(0) if event.key == 'escape' else None])
+                plt.plot(cx, cy, ".y", label="course")
+                plt.plot(x_r_list, y_r_list, "-b", label="robot trajectory")
+                plt.plot(x_h_list, y_h_list, "-r", label="human trajectory")
+                plt.plot(x_r_list[-1], y_r_list[-1], "xg", label="target")
+                plt.plot(x_h_list[-1], y_h_list[-1], "xr", label="target")
+                plt.scatter(intersection_curbs[0], intersection_curbs[1], color='black', linewidths=0.3)
+                plt.axis("equal")
+                plt.grid(True)
+                if val_func >= 0:
+                    plt.title("robot speed (m/s):" + str(robot_car.v)[:4] + ", " + mode_name)
+                else:
+                    plt.title("robot speed (m/s):" + str(robot_car.v)[:4] + ", " + mode_name + ", safe control in effect")
+                plt.pause(0.1)
+
+        print("minimum distance is ", min_dist)
+        if self.show_animation:
+            plt.plot(x_r_list, y_r_list, "-b", label="robot trajectory")
+            plt.plot(x_h_list, y_h_list, "-r", label="human trajectory")
+            plt.plot(x_r_list[-1], y_r_list[-1], "xg", label="target")
+            plt.plot(x_h_list[-1], y_h_list[-1], "xr", label="target")
+            plt.scatter(intersection_curbs[0], intersection_curbs[1], color='black', linewidths=0.3)
+            plt.axis("equal")
+            plt.grid(True)
+            plt.title("robot speed (m/s):" + str(robot_car.v)[:4] + " " + mode_name)
 
 
     def get_traj_from_prediction(self, filename):
@@ -165,34 +233,65 @@ class Simulator(object):
 
         return robot_car_traj
 
-    def plot(self, robot_car_traj, human_car_traj):
-        robot_car_x = robot_car_traj["x_t"]
-        robot_car_y = robot_car_traj["y_t"]
+    def init_robot_state(self, robot_car_traj_ref):
 
-        human_car_x = human_car_traj["x_t"]
-        human_car_y = human_car_traj["y_t"]
+        dx = (robot_car_traj_ref['x_t'][1] - robot_car_traj_ref['x_t'][0]) / 0.1
+        dy = (robot_car_traj_ref['y_t'][1] - robot_car_traj_ref['y_t'][0]) / 0.1
+        x_r_init, y_r_init = robot_car_traj_ref['x_t'][0], robot_car_traj_ref['y_t'][0]
+        v_r_init = np.sqrt(dx ** 2 + dy ** 2)
+        psi_r_init = np.arctan2(dy, dx)
 
-        # intersection_curbs = np.load("/home/anjianl/Desktop/project/optimized_dp/data/map/obstacle_map/intersection_curbs.npy")
-        intersection_curbs = np.load(
-            "/Users/anjianli/Desktop/robotics/project/optimized_dp/data/map/obstacle_map/intersection_curbs.npy")
+        return x_r_init, y_r_init, psi_r_init, v_r_init
 
-        fig, ax = plt.subplots()
+    def init_human_state(self, human_car_traj, human_start_time):
 
-        ax.axis('equal')
+        dx = (human_car_traj['x_t'][human_start_time + 1] - human_car_traj['x_t'][human_start_time]) / 0.1
+        dy = (human_car_traj['y_t'][human_start_time + 1] - human_car_traj['y_t'][human_start_time]) / 0.1
+        x_h_init, y_h_init = human_car_traj['x_t'][human_start_time], human_car_traj['y_t'][human_start_time]
+        v_h_init = np.sqrt(dx ** 2 + dy ** 2)
+        psi_h_init = np.arctan2(dy, dx)
 
-        ax.scatter(intersection_curbs[0], intersection_curbs[1], color='black', linewidths=0.3)
+        return x_h_init, y_h_init, psi_h_init, v_h_init
 
-        ims = []
-        for i in range(len(human_car_x)):
-            # ax.set_title('t = {:.2f}'.format(i * 0.1))
-            im = ax.scatter(human_car_x[45:i + 45], human_car_y[45:i + 45], animated=True, marker="o", color='red')
-            im2 = ax.scatter(robot_car_x[:i + 1], robot_car_y[:i + 1], animated=True, color='green')
-            ims.append([im, im2])
+    def get_human_car_prediction(self, human_car_traj, curr_step_human):
 
-        ani = animation.ArtistAnimation(fig, ims, interval=50, blit=True,
-                                        repeat_delay=1000, repeat=False)
+        traj_to_pred = {}
+        if curr_step_human + self.poly_num < len(human_car_traj['x_t']) - 1:
+            traj_to_pred['x_t'] = human_car_traj['x_t'][curr_step_human:curr_step_human + self.poly_num]
+            traj_to_pred['y_t'] = human_car_traj['y_t'][curr_step_human:curr_step_human + self.poly_num]
+            traj_to_pred['v_t'] = human_car_traj['v_t'][curr_step_human:curr_step_human + self.poly_num]
+        else:
+            traj_to_pred['x_t'] = human_car_traj['x_t'][curr_step_human:]
+            traj_to_pred['y_t'] = human_car_traj['y_t'][curr_step_human:]
+            traj_to_pred['v_t'] = human_car_traj['v_t'][curr_step_human:]
 
-        plt.show()
+        # Fit polynomial for x, y position: x(t), y(t)
+        poly_traj = ProcessPredictionV3().fit_polynomial_traj([traj_to_pred])
+
+        raw_acc_list, raw_omega_list = ProcessPredictionV3().get_action_v_profile([traj_to_pred], poly_traj)
+
+        filter_acc_list, filter_omega_list = PredictModeV3().filter_action(raw_acc_list, raw_omega_list)
+
+        filter_acc, filter_omega = filter_acc_list[0], filter_omega_list[0]
+
+        mode_num_list, mode_probability_list = PredictModeV3().get_mode(filter_acc, filter_omega)
+
+        if mode_num_list[0] == 0:
+            mode_name = "decelerate"
+        elif mode_num_list[0] == 1:
+            mode_name = "stable"
+        elif mode_num_list[0] == 2:
+            mode_name = "accelerate"
+        elif mode_num_list[0] == 3:
+            mode_name = "left turn"
+        elif mode_num_list[0] == 4:
+            mode_name = "right turn"
+        elif mode_num_list[0] == 5:
+            mode_name = "roundabout"
+        else:
+            mode_name = "other"
+
+        return mode_num_list[0], mode_name, mode_probability_list[0]
 
 if __name__ == "__main__":
 
