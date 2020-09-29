@@ -19,6 +19,7 @@ import math
 
 from prediction.clustering_v3 import ClusteringV3
 from prediction.process_prediction_v3 import ProcessPredictionV3
+from prediction.predict_mode_v3 import PredictModeV3
 
 def main():
     ################### PARSING ARGUMENTS FROM USERS #####################
@@ -34,8 +35,8 @@ def main():
 
     ################# Obtain and reset the action bound for each round of computation #################
     # Get the action bound for each mode
-    # action_bound_mode = [mode_num, acc_min, acc_max, omega_min, omega_max]
-    action_bound_mode = ClusteringV3().get_clustering()
+    # action_bound_mode = ClusteringV3().get_clustering()
+    action_bound_mode = PredictModeV3().action_bound_mode
     omega_bound, acc_bound = ProcessPredictionV3().omega_bound, ProcessPredictionV3().acc_bound
 
     # A bigger loop than the main loop
@@ -65,6 +66,7 @@ def main():
         l0  = hcl.asarray(my_shape)
         #probe = hcl.asarray(np.zeros(tuple(g.pts_each_dim)))
         #obstacle = hcl.asarray(cstraint_values)
+        Obs = hcl.asarray(constraint_values) # Add obstacles
 
         # Initialize uOpt_1, uOpt_2
         uOpt_1 = hcl.asarray(np.zeros(tuple(g.pts_each_dim)))
@@ -135,6 +137,7 @@ def main():
         for i in range (1, len(tau)):
             #tNow = tau[i-1]
             t_minh= hcl.asarray(np.array((tNow, tau[i])))
+            V1_old = V_1.asnumpy()
             while tNow <= tau[i] - 1e-4:
                  # Start timing
                  start = time.time()
@@ -145,7 +148,7 @@ def main():
                  if g.dims == 4:
                     solve_pde(V_1, V_0, list_x1, list_x2, list_x3, list_x4, t_minh, l0)
                  if g.dims == 5:
-                    solve_pde(V_1, V_0, list_x1, list_x2, list_x3, list_x4, list_x5 ,t_minh, l0, uOpt_1, uOpt_2)
+                    solve_pde(V_1, V_0, list_x1, list_x2, list_x3, list_x4, list_x5 ,t_minh, l0, uOpt_1, uOpt_2, Obs)
                  if g.dims == 6:
                     solve_pde(V_1, V_0, list_x1, list_x2, list_x3, list_x4, list_x5, list_x6, t_minh, l0)
 
@@ -162,7 +165,7 @@ def main():
                  print("tNow is ", tNow)
                  # Saving reachable set and control data into disk
                  if tNow == 0.0029314488638192415 or tNow == 0.5 or tNow == 1 or tNow == 1.5 or tNow == 2 or tNow == 2.5 or tNow == 3:
-                    file_dir = '/home/anjianl/Desktop/project/optimized_dp/data/brs/0910/mode' + str(mode_num)
+                    file_dir = '/home/anjianl/Desktop/project/optimized_dp/data/brs/0928/mode' + str(mode_num)
                     if not os.path.exists(file_dir):
                         os.mkdir(file_dir)
                     file_brs_path = file_dir + '/reldyn5d_brs_mode' + str(mode_num) + '_t_%.2f.npy'
@@ -179,6 +182,8 @@ def main():
 
                     a = 1
 
+            print("Max diff. from previous time step: {}".format(np.max(np.abs(V_1.asnumpy() - V1_old))))
+            print("Avg diff. from previous time step: {}".format(np.mean(np.abs(V_1.asnumpy() - V1_old))))
         # Time info printing
         print("Total kernel time (s): {:.5f}".format(execution_time))
         print("Finished solving\n")

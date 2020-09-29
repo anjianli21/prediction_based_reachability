@@ -197,6 +197,7 @@ def graph_5D():
     V_f = hcl.placeholder(tuple(g.pts_each_dim), name="V_f", dtype=hcl.Float())
     V_init = hcl.placeholder(tuple(g.pts_each_dim), name="V_init", dtype=hcl.Float())
     l0 = hcl.placeholder(tuple(g.pts_each_dim), name="l0", dtype=hcl.Float())
+    Obs = hcl.placeholder(tuple(g.pts_each_dim), name="Obs", dtype=hcl.Float())
     t = hcl.placeholder((2,), name="t", dtype=hcl.Float())
     uOpt1 = hcl.placeholder(tuple(g.pts_each_dim), name="uOpt1", dtype=hcl.Float())
     uOpt2 = hcl.placeholder(tuple(g.pts_each_dim), name="uOpt2", dtype=hcl.Float())
@@ -208,7 +209,7 @@ def graph_5D():
     x4 = hcl.placeholder((g.pts_each_dim[3],), name="x4", dtype=hcl.Float())
     x5 = hcl.placeholder((g.pts_each_dim[4],), name="x5", dtype=hcl.Float())
 
-    def graph_create(V_new, V_init, x1, x2, x3, x4, x5, t, l0, uOpt1, uOpt2):
+    def graph_create(V_new, V_init, x1, x2, x3, x4, x5, t, l0, uOpt1, uOpt2, Obs):
         # Specify intermediate tensors
         deriv_diff1 = hcl.compute(V_init.shape, lambda *x: 0, "deriv_diff1")
         deriv_diff2 = hcl.compute(V_init.shape, lambda *x: 0, "deriv_diff2")
@@ -274,6 +275,11 @@ def graph_5D():
         def maxVWithVInit(i, j, k, l, m):
             with hcl.if_(V_new[i, j, k, l, m] < V_init[i, j, k, l, m]):
                 V_new[i, j, k, l, m] = V_init[i, j, k, l, m]
+
+        # Comparison with the constraint function
+        def maxVWithCStraint(i, j, k, l, m):
+             with hcl.if_(V_new[i, j, k, l, m] < Obs[i, j, k, l, m]):
+                 V_new[i, j, k, l, m] = Obs[i, j, k, l, m]
 
         # Calculate Hamiltonian for every grid point in V_init
         with hcl.Stage("Hamiltonian"):
@@ -566,20 +572,22 @@ def graph_5D():
         # if compMethod == 'HJ_PDE':
         result = hcl.update(V_new,
                             lambda i, j, k, l, m: V_init[i, j, k, l, m] + V_new[i, j, k, l, m] * delta_t[0])
-        if compMethod == 'maxVWithV0':
+        if 'maxVWithV0' in compMethod:
             result = hcl.update(V_new, lambda i, j, k, l, m: maxVWithV0(i, j, k, l, m))
-        if compMethod == 'minVWithV0':
+        if 'minVWithV0' in compMethod:
             result = hcl.update(V_new, lambda i, j, k, l, m: minVWithV0(i, j, k, l, m))
-        if compMethod == 'maxVWithVInit':
+        if 'maxVWithVInit' in compMethod:
             result = hcl.update(V_new, lambda i, j, k, l, m: maxVWithVInit(i, j, k, l, m))
-        if compMethod == 'minVWithVInit':
+        if 'minVWithVInit' in compMethod:
             result = hcl.update(V_new, lambda i, j, k, l, m: minVWithVInit(i, j, k, l, m))
+        if 'maxVWithCStraint' in compMethod:
+            result = hcl.update(V_new, lambda i, j, k, l, m: maxVWithCStraint(i, j, k, l, m))
         # Copy V_new to V_init
         hcl.update(V_init, lambda i, j, k, l, m: V_new[i, j, k, l, m])
         return result
 
 
-    s = hcl.create_schedule([V_f, V_init, x1, x2, x3, x4, x5, t, l0, uOpt1, uOpt2], graph_create)
+    s = hcl.create_schedule([V_f, V_init, x1, x2, x3, x4, x5, t, l0, uOpt1, uOpt2, Obs], graph_create)
     ##################### CODE OPTIMIZATION HERE ###########################
     print("Optimizing\n")
 
