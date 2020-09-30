@@ -15,9 +15,10 @@ import matplotlib.pyplot as plt
 class PlotReldyn5D(object):
 
     def plot(self):
-        g = grid(np.array([-10.0, -10.0, -math.pi, 0, 0]), np.array([10.0, 10.0, math.pi, 17, 17]), 5,
-                 np.array([41, 41, 36, 35, 35]), [2])
-
+        # g = grid(np.array([-10.0, -10.0, -math.pi, 0, 0]), np.array([10.0, 10.0, math.pi, 17, 17]), 5,
+        #          np.array([41, 41, 36, 35, 35]), [2])
+        g = grid(np.array([-10.0, -10.0, -math.pi, -1, -1]), np.array([10.0, 10.0, math.pi, 18, 18]), 5,
+                 np.array([41, 41, 24, 39, 39]), [2])
 
         # TODO 0909
         ctrl_beta_0 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0910/mode-1/reldyn5d_ctrl_beta_mode-1_t_3.00.npy")
@@ -25,6 +26,7 @@ class PlotReldyn5D(object):
 
         # Set time
         time = 3.0
+        # Previous
         # Set the slice parameter, not psi_rel = psi_h - psi_r
         # psi = 90
         # v_h = 6.0
@@ -34,20 +36,34 @@ class PlotReldyn5D(object):
         v_h = 6.0
         v_r = 0.0
 
+        # Previous
+        # V_0 = np.load(
+        #     "/home/anjianl/Desktop/project/optimized_dp/data/brs/0910/mode0/reldyn5d_brs_mode0_t_{:.2f}.npy".format(time))
+        # V_1 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0910/mode1/reldyn5d_brs_mode1_t_{:.2f}.npy".format(time))
+        # V_2 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0910/mode2/reldyn5d_brs_mode2_t_{:.2f}.npy".format(time))
+        # V_3 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0910/mode3/reldyn5d_brs_mode3_t_{:.2f}.npy".format(time))
+        # V_4 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0910/mode4/reldyn5d_brs_mode4_t_{:.2f}.npy".format(time))
+        # V_5 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0910/mode5/reldyn5d_brs_mode5_t_{:.2f}.npy".format(time))
+        # V_6 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0910/mode-1/reldyn5d_brs_mode-1_t_{:.2f}.npy".format(time))
+
         V_0 = np.load(
-            "/home/anjianl/Desktop/project/optimized_dp/data/brs/0910/mode0/reldyn5d_brs_mode0_t_{:.2f}.npy".format(time))
-        V_1 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0910/mode1/reldyn5d_brs_mode1_t_{:.2f}.npy".format(time))
-        V_2 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0910/mode2/reldyn5d_brs_mode2_t_{:.2f}.npy".format(time))
-        V_3 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0910/mode3/reldyn5d_brs_mode3_t_{:.2f}.npy".format(time))
-        V_4 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0910/mode4/reldyn5d_brs_mode4_t_{:.2f}.npy".format(time))
-        V_5 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0910/mode5/reldyn5d_brs_mode5_t_{:.2f}.npy".format(time))
-        V_6 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0910/mode-1/reldyn5d_brs_mode-1_t_{:.2f}.npy".format(time))
+            "/home/anjianl/Desktop/project/optimized_dp/data/brs/0928-correct/mode0/reldyn5d_brs_mode0_t_{:.2f}.npy".format(time))
+        V_1 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0928-correct/mode1/reldyn5d_brs_mode1_t_{:.2f}.npy".format(time))
+        V_2 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0928-correct/mode2/reldyn5d_brs_mode2_t_{:.2f}.npy".format(time))
+        V_3 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0928-correct/mode3/reldyn5d_brs_mode3_t_{:.2f}.npy".format(time))
+        V_4 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0928-correct/mode4/reldyn5d_brs_mode4_t_{:.2f}.npy".format(time))
+        V_5 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0928-correct/mode5/reldyn5d_brs_mode5_t_{:.2f}.npy".format(time))
+        V_6 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0928-correct/mode-1/reldyn5d_brs_mode-1_t_{:.2f}.npy".format(time))
 
         x_grid, y_grid = self.get_xy_grid(g, [0, 1])
 
-        psi_index = int((psi + 180) / 10)
-        v_h_index = int(2 * v_h)
-        v_r_index = int(2 * v_r)
+        # psi_index = int((psi + 180) / 10)
+        # v_h_index = int(2 * v_h)
+        # v_r_index = int(2 * v_r)
+
+        psi_index = int((psi + 180) / 15)
+        v_h_index = int(2 * v_h + 2)
+        v_r_index = int(2 * v_r + 2)
 
         val_0 = np.squeeze(V_0[:, :, psi_index, v_h_index, v_r_index])
         val_1 = np.squeeze(V_1[:, :, psi_index, v_h_index, v_r_index])

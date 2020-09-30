@@ -40,7 +40,7 @@ def main():
     omega_bound, acc_bound = ProcessPredictionV3().omega_bound, ProcessPredictionV3().acc_bound
 
     # A bigger loop than the main loop
-    # This loops over different driving mode and set different action bound
+    # This loops over different driving mode and set different action bound # TODO choose where to start
     for mode_num in range(-1, ClusteringV3().clustering_num):
         # Reset the my_car object and pass it into main loop
         # Disturbances: w_h, a_h
