@@ -110,29 +110,6 @@ def main():
         execution_time = 0
         lookback_time = 0
 
-        # # Get the action bound for each mode
-        # # action_bound_mode = [mode_num, acc_min, acc_max, omega_min, omega_max]
-        # action_bound_mode = ClusteringV3().get_clustering()
-        # omega_bound, acc_bound = ProcessPredictionV3().omega_bound, ProcessPredictionV3().acc_bound
-        #
-        # # A bigger loop than the main loop
-        # # This loops over different driving mode and set different action bound
-        # for mode_num in range(0, ClusteringV3().clustering_num):
-        #     # Reset the my_car object and pass it into main loop
-        #     # Disturbances: w_h, a_h
-        #
-        #     # Mode -1, full range
-        #     if mode_num == -1:
-        #         my_car.dMin, my_car.dMax = \
-        #             np.array([ProcessPredictionV3().omega_bound[0], ProcessPredictionV3().acc_bound[0]]), \
-        #             np.array([ProcessPredictionV3().omega_bound[1], ProcessPredictionV3().acc_bound[1]])
-        #     else:
-        #         my_car.dMin, my_car.dMax = \
-        #             np.array([action_bound_mode[mode_num][3], action_bound_mode[mode_num][1]]), \
-        #             np.array([action_bound_mode[mode_num][4], action_bound_mode[mode_num][2]])
-        #         print("dmin, dmax are", my_car.dMin, my_car.dMax)
-
-
         tNow = tau[0]
         for i in range (1, len(tau)):
             #tNow = tau[i-1]

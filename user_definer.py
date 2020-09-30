@@ -7,6 +7,7 @@ from dynamics.Humannoid6D_sys1 import *
 from dynamics.DubinsCar4D import *
 from dynamics.DubinsCar import *
 from dynamics.RelDyn5D import *
+from dynamics.Bicycle4D import *
 import scipy.io as sio
 
 from prediction.clustering_v3 import ClusteringV3
@@ -62,3 +63,33 @@ my_object  = my_car
 my_shape = Initial_value_f
 ########################################################################################################################################
 
+# # Bicycle dynamics 4D
+# # Intersection scenario
+# # Original 713 x 931 for intersection is too big
+# # intersection_valfunc has size (366, 466, 24, 39)
+# # roundabout_valfunc has size (367, 465, 24, 39)
+# g = grid(np.array([940.8, 935.8, -math.pi, -1]), np.array([1066.7, 1035.1, math.pi, 18]), 4, np.array([366, 466, 24, 39]), [2])
+#
+# my_car = Bicycle_4D(x=[0, 0, 0, 0], uMin=np.array([-0.325, -5]), uMax=np.array([0.325, 3]), dims=4, uMode="max", dMode="min")
+#
+# print("Computing bicycle dynamics 4D")
+#
+# # Use the grid to initialize initial value function
+# Initial_value_f = np.load("/home/anjianl/Desktop/project/optimized_dp/data/map/obstacle_map/intersection_valfunc.npy") # Load the fmm map of the obstacle
+# Initial_value_f = np.minimum(Initial_value_f, HalfPlane(g, 0, 3))
+# Initial_value_f = np.minimum(Initial_value_f, - HalfPlane(g, 17, 3))
+#
+# # Look-back length and time step
+# lookback_length = 3.1
+# t_step = 0.05
+#
+# small_number = 1e-5
+# tau = np.arange(start = 0, stop = lookback_length + small_number, step = t_step)
+# print("Welcome to optimized_dp \n")
+#
+# # Use the following variable to specify the characteristics of computation
+# # compMethod = "none" # Reachable set
+# compMethod = ["minVWithV0", "maxVWithCStraint"] # Reachable tube with obstacles
+#
+# my_object  = my_car
+# my_shape = Initial_value_f
