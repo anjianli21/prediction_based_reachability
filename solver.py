@@ -164,8 +164,8 @@ def main():
 
                  print("tNow is ", tNow)
                  # Saving reachable set and control data into disk
-                 if tNow == 0.0029314488638192415 or tNow == 0.5 or tNow == 1 or tNow == 1.5 or tNow == 2 or tNow == 2.5 or tNow == 3:
-                    file_dir = '/home/anjianl/Desktop/project/optimized_dp/data/brs/0928/mode' + str(mode_num)
+                 if tNow == 0.0028518247418105602 or tNow == 0.5 or tNow == 1 or tNow == 1.5 or tNow == 2 or tNow == 2.5 or tNow == 3:
+                    file_dir = '/home/anjianl/Desktop/project/optimized_dp/data/brs/0929/mode' + str(mode_num)
                     if not os.path.exists(file_dir):
                         os.mkdir(file_dir)
                     file_brs_path = file_dir + '/reldyn5d_brs_mode' + str(mode_num) + '_t_%.2f.npy'

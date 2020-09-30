@@ -42,9 +42,9 @@ print("Computing relative dynamics 5D")
 Initial_value_f = CylinderShape(g, [3, 4, 5], np.zeros(5), 2)
 Initial_value_f = np.minimum(Initial_value_f, HalfPlane(g, 0, 4))
 Initial_value_f = np.minimum(Initial_value_f, - HalfPlane(g, 17, 4))
-# Obstacles set is v_h \in [-1, 0] and [17, 18]
-constraint_values = - np.minimum(- HalfPlane(g, 17, 3), HalfPlane(g, 0, 3))
 
+# Obstacles set is v_h \in [-1, 0] and [17, 18]
+constraint_values = np.minimum(HalfPlane(g, 17, 3), - HalfPlane(g, 0, 3))
 
 # Look-back length and time step
 lookback_length = 3.1
