@@ -78,9 +78,12 @@ print("Computing bicycle dynamics 4D intersection")
 
 # Use the grid to initialize initial value function
 Initial_value_f = np.load("/home/anjianl/Desktop/project/optimized_dp/data/map/value_function/intersection_valfunc_correct.npy") # Load the fmm map-based value function of the obstacle
+# Add speed target
+Initial_value_f = np.minimum(Initial_value_f, HalfPlane(g, 0, 3))
+Initial_value_f = np.minimum(Initial_value_f, - HalfPlane(g, 17, 3))
 
 # Look-back length and time step
-lookback_length = 3.1
+lookback_length = 4.1
 t_step = 0.05
 
 small_number = 1e-5
@@ -89,7 +92,7 @@ print("Welcome to optimized_dp \n")
 
 # Use the following variable to specify the characteristics of computation
 # compMethod = "none" # Reachable set
-compMethod = ["minVWithV0", "maxVWithCStraint"] # Reachable tube with obstacles
+compMethod = "minVWithV0" # Reachable tube
 
 my_object  = my_car
 my_shape = Initial_value_f
@@ -110,11 +113,12 @@ my_shape = Initial_value_f
 #
 # # Use the grid to initialize initial value function
 # Initial_value_f = np.load("/home/anjianl/Desktop/project/optimized_dp/data/map/value_function/roundabout_valfunc_correct.npy") # Load the fmm map-based value function of the obstacle
+# # Add speed target
 # Initial_value_f = np.minimum(Initial_value_f, HalfPlane(g, 0, 3))
 # Initial_value_f = np.minimum(Initial_value_f, - HalfPlane(g, 17, 3))
 #
 # # Look-back length and time step
-# lookback_length = 3.1
+# lookback_length = 4.1
 # t_step = 0.05
 #
 # small_number = 1e-5
@@ -123,7 +127,7 @@ my_shape = Initial_value_f
 #
 # # Use the following variable to specify the characteristics of computation
 # # compMethod = "none" # Reachable set
-# compMethod = ["minVWithV0", "maxVWithCStraint"] # Reachable tube with obstacles
+# compMethod = "minVWithV0" # Reachable tube
 #
 # my_object  = my_car
 # my_shape = Initial_value_f

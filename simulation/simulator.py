@@ -1,6 +1,7 @@
 import numpy as np
 import sys
 sys.path.append("/Users/anjianli/Desktop/robotics/project/optimized_dp")
+sys.path.append("/home/anjianl/Desktop/project/optimized_dp")
 from matplotlib import pyplot as plt
 from matplotlib import animation, rc
 from argparse import ArgumentParser
@@ -46,27 +47,16 @@ class Simulator(object):
             self.file_dir_intersection = '/Users/anjianli/Desktop/robotics/project/optimized_dp/data/intersection-data'
             self.file_dir_roundabout = '/Users/anjianli/Desktop/robotics/project/optimized_dp/data/roundabout-data'
 
-        # Trial 1
         self.huamn_car_file_name_intersection = 'car_20_vid_09.csv'
         self.robot_car_file_name_intersection = 'car_36_vid_11_refPath.csv'
-        self.human_start_step = 180
-        self.robot_target_speed = 8
-        self.robot_start_step = 0
-
-        # self.human_start_step = 150
-        # self.robot_start_step = 60
-        # self.robot_target_speed = 1
-
-        # # Trial 2
-        # self.huamn_car_file_name_intersection = 'car_112_vid_11.csv'
-        # self.robot_car_file_name_intersection = 'car_73_vid_02_refPath.csv'
-        # self.human_start_step = 230
-        # self.robot_target_speed = 5
+        # Trial 1
+        # self.human_start_step = 180
+        # self.robot_target_speed = 8
         # self.robot_start_step = 0
-
-        # self.human_start_step = 230
-        # self.robot_target_speed = 1
-        # self.robot_start_step = 79
+        # Trial 2
+        self.human_start_step = 230
+        self.robot_target_speed = 1
+        self.robot_start_step = 79
 
         self.poly_num = 30
 
@@ -76,8 +66,10 @@ class Simulator(object):
         self.use_safe_control = True
         # self.use_safe_control = False
 
-        self.use_prediction = True
-        # self.use_prediction = False
+        # self.use_prediction = True
+        self.use_prediction = False
+
+        self.save_plot = False
 
     def simulate(self):
 
@@ -204,10 +196,12 @@ class Simulator(object):
                 else:
                     plt.title("robot speed (m/s):" + str(robot_car.v)[:4] + ", human mode:" + mode_name)
                 plt.pause(0.1)
-                if self.use_prediction:
-                    plt.savefig("/Users/anjianli/Desktop/robotics/project/optimized_dp/result/simulation/2/t_{:.2f}_pred.png".format(curr_t))
-                else:
-                    plt.savefig("/Users/anjianli/Desktop/robotics/project/optimized_dp/result/simulation/2/t_{:.2f}_nopred.png".format(curr_t))
+
+                if self.save_plot:
+                    if '/Users/anjianli/anaconda3/envs/hcl-env/lib/python3.8' in sys.path:
+                        plt.savefig("/Users/anjianli/Desktop/robotics/project/optimized_dp/result/simulation/2/t_{:.2f}_pred.png".format(curr_t))
+                    else:
+                        plt.savefig("/home/anjianl/Desktop/project/optimized_dp/result/simulation/2/t_{:.2f}_nopred.png".format(curr_t))
 
         print("minimum distance is ", min_dist)
 

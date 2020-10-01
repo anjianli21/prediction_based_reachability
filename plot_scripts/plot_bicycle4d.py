@@ -61,7 +61,7 @@ class PlotBicycle4D(object):
 
         fig, ax = plt.subplots()
 
-        CS_0 = ax.contour(x_grid, y_grid, val_0, levels=[-1, 0, 1])
+        CS_0 = ax.contour(x_grid, y_grid, val_0, levels=[-4, 0, 4])
         ax.clabel(CS_0, inline=1, fontsize=5)
         # CS_1 = ax.contour(x_grid, y_grid, val_1, levels=[0], colors='darkmagenta')
         # ax.clabel(CS_1, inline=1, fontsize=5)
