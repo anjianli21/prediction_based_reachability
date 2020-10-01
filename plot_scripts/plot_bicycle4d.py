@@ -15,7 +15,8 @@ import matplotlib.pyplot as plt
 class PlotBicycle4D(object):
 
     def plot(self):
-        g = grid(np.array([940.8, 935.8, -math.pi, -1]), np.array([1066.7, 1035.1, math.pi, 18]), 4, np.array([366, 466, 24, 39]), [2])
+        # Intersection
+        g = grid(np.array([940.8, 935.8, -math.pi, -1]), np.array([1066.7, 1035.1, math.pi, 18]), 4, np.array([466, 366, 24, 39]), [2])
 
         # Set time
         time = 3.0
@@ -24,7 +25,7 @@ class PlotBicycle4D(object):
         v_r = 2.0
 
         V_0 = np.load(
-            "/home/anjianl/Desktop/project/optimized_dp/data/brs/0929/obstacle/bicycle4d_brs_intersection_t_0.01.npy")
+            "/home/anjianl/Desktop/project/optimized_dp/data/brs/0929/obstacle/intersection/bicycle4d_brs_intersection_t_0.01.npy")
         # V_1 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0928-correct/mode1/reldyn5d_brs_mode1_t_{:.2f}.npy".format(time))
         # V_2 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0928-correct/mode2/reldyn5d_brs_mode2_t_{:.2f}.npy".format(time))
         # V_3 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0928-correct/mode3/reldyn5d_brs_mode3_t_{:.2f}.npy".format(time))
@@ -44,6 +45,7 @@ class PlotBicycle4D(object):
         v_r_index = int(2 * v_r + 2)
 
         val_0 = np.squeeze(V_0[:, :, psi_index,  v_r_index])
+
         # val_1 = np.squeeze(V_1[:, :, psi_index, v_h_index, v_r_index])
         # val_2 = np.squeeze(V_2[:, :, psi_index, v_h_index, v_r_index])
         # val_3 = np.squeeze(V_3[:, :, psi_index, v_h_index, v_r_index])
@@ -54,9 +56,12 @@ class PlotBicycle4D(object):
         # ctrl_beta_val_0 = np.squeeze(ctrl_beta_0[:, :, psi_index, v_h_index, v_r_index])
         # ctrl_acc_val_0 = np.squeeze(ctrl_acc_0[:, :, psi_index, v_h_index, v_r_index])
 
+        # plt.imshow(val_0.T)
+        # plt.show()
+
         fig, ax = plt.subplots()
 
-        CS_0 = ax.contour(x_grid, y_grid, val_0, levels=[0], colors='sandybrown')
+        CS_0 = ax.contour(x_grid, y_grid, val_0, levels=[-1, 0, 1])
         ax.clabel(CS_0, inline=1, fontsize=5)
         # CS_1 = ax.contour(x_grid, y_grid, val_1, levels=[0], colors='darkmagenta')
         # ax.clabel(CS_1, inline=1, fontsize=5)
@@ -83,7 +88,7 @@ class PlotBicycle4D(object):
         ax.set_ylabel("y_r")
         ax.set_title('Avoid set: psi_rel = {:d}, v_robot = {:.1f}m/s, t = {:.1f}s'.format(psi, v_h, v_r, time))
 
-
+        # plt.gca().invert_yaxis()
 
         plt.show()
 

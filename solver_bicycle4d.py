@@ -113,8 +113,8 @@ def main():
 
              print("tNow is ", tNow)
              # Saving reachable set and control data into disk
-             if tNow == 0.005036717280745506 or tNow == 0.5 or tNow == 1 or tNow == 1.5 or tNow == 2 or tNow == 2.5 or tNow == 3:
-                file_dir = '/home/anjianl/Desktop/project/optimized_dp/data/brs/0929/obstacle'
+             if tNow == 0.00516090914607048 or tNow == 1 or tNow == 2 or tNow == 3:
+                file_dir = '/home/anjianl/Desktop/project/optimized_dp/data/brs/0929/obstacle/intersection'
                 if not os.path.exists(file_dir):
                     os.mkdir(file_dir)
                 file_brs_path = file_dir + '/bicycle4d_brs_intersection' + '_t_%.2f.npy'

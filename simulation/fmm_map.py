@@ -7,77 +7,97 @@ import skfmm
 intersection
 xmin:  940.8 xmax:  1066.7
 ymin:  935.8 ymax:  1035.1
-size is  731 931
-dx, dy is 0.17222982216142282 0.13584131326949378
-
-roundabout
-xmin:  956.7 xmax:  1073.4
-ymin:  954.0 ymax:  1046.0
-size is  734 929
-dx, dy is 0.1589918256130791 0.12534059945504086
+size is  931 * 731 (x * y)
+dx, dy is 0.13523093447905488 0.13584131326949378
+intersection fmm downsampled size is (466, 366)
 """
 
-# intersection_obs = np.load("/home/anjianl/Desktop/project/optimized_dp/data/map/obstacle_map/intersection_obs_map.npy")
-# intersection_curbs = np.load("/home/anjianl/Desktop/project/optimized_dp/data/map/obstacle_map/intersection_curbs.npy")
+# intersection_obs = np.load("/home/anjianl/Desktop/project/optimized_dp/data/map/obstacle_map/intersection_obs_map.npy").T
+# # intersection_curbs = np.load("/home/anjianl/Desktop/project/optimized_dp/data/map/obstacle_map/intersection_curbs.npy")
 # intersection_x_min, intersection_x_max = 940.8, 1066.7
 # intersection_y_min, intersection_y_max = 935.8, 1035.1
+# intersection_dx, intersection_dy = (intersection_x_max - intersection_x_min) / np.shape(intersection_obs)[0], (intersection_y_max - intersection_y_min) / np.shape(intersection_obs)[1]
 #
-# # intersection_obs = intersection_obs[::5, ::4]
 # print("intersection")
 # print("xmin: ", intersection_x_min, "xmax: ", intersection_x_max)
 # print("ymin: ", intersection_y_min, "ymax: ", intersection_y_max)
 # print("size is ", np.shape(intersection_obs)[0], np.shape(intersection_obs)[1])
-# print("dx, dy is", (intersection_x_max - intersection_x_min) / np.shape(intersection_obs)[0], (intersection_y_max - intersection_y_min) / np.shape(intersection_obs)[0])
+# print("dx, dy is", intersection_dx, intersection_dy)
 #
 # intersection_fmm_prepare = intersection_obs
 # intersection_fmm_prepare[intersection_obs == 0] = - 1
 # intersection_fmm_prepare[intersection_obs == 1] = 1
-# intersection_fmm_map = skfmm.distance(intersection_fmm_prepare, dx=[0.17222982216142282, 0.13584131326949378])
+# intersection_fmm_map = skfmm.distance(intersection_fmm_prepare, dx=[intersection_dx, intersection_dy])
 # intersection_fmm_map = - intersection_fmm_map
 # np.save("/home/anjianl/Desktop/project/optimized_dp/data/map/obstacle_map/intersection_fmm_map.npy", intersection_fmm_map)
 #
-# roundabout_obs = np.load("/home/anjianl/Desktop/project/optimized_dp/data/map/obstacle_map/roundabout_obs_map.npy")
-# roundabout_curbs = np.load("/home/anjianl/Desktop/project/optimized_dp/data/map/obstacle_map/roundabout_curbs.npy")
-# roundabout_x_min, roundabout_x_max = 956.7, 1073.4
-# roundabout_y_min, roundabout_y_max = 954.0, 1046.0
-# print("roundabout")
-# print("xmin: ", roundabout_x_min, "xmax: ", roundabout_x_max)
-# print("ymin: ", roundabout_y_min, "ymax: ", roundabout_y_max)
-# print("size is ", np.shape(roundabout_obs)[0], np.shape(roundabout_obs)[1])
-# print("dx, dy is", (roundabout_x_max - roundabout_x_min) / np.shape(roundabout_obs)[0], (roundabout_y_max - roundabout_y_min) / np.shape(roundabout_obs)[0])
+# intersection_fmm_map_downsampled = intersection_fmm_map[::2, ::2]
+# print("intersection fmm downsampled size is", np.shape(intersection_fmm_map_downsampled))
+# np.save("/home/anjianl/Desktop/project/optimized_dp/data/map/obstacle_map/intersection_fmm_map_downsampled.npy", intersection_fmm_map_downsampled)
 #
-# roundabout_fmm_prepare = roundabout_obs
-# roundabout_fmm_prepare[roundabout_obs == 0] = - 1
-# roundabout_fmm_prepare[roundabout_obs == 1] = 1
-# roundabout_fmm_map = skfmm.distance(roundabout_obs, dx=[0.1589918256130791, 0.12534059945504086])
-# roundabout_fmm_map = - roundabout_fmm_map
-# np.save("/home/anjianl/Desktop/project/optimized_dp/data/map/obstacle_map/roundabout_fmm_map.npy", roundabout_fmm_map)
+# intersection_valfunc = np.zeros((466, 366, 24, 39))
+# for i in range(24):
+#     for j in range(39):
+#         intersection_valfunc[:, :, i, j] = intersection_fmm_map_downsampled
+#
+# # TODO, reverse y axis, I don't know why
+# intersection_valfunc_correctify = np.zeros(np.shape(intersection_valfunc))
+# for i in range(366):
+#     intersection_valfunc_correctify[:, i, :, :] = intersection_valfunc[:, 365 - i, :, :]
+#
+# np.save("/home/anjianl/Desktop/project/optimized_dp/data/map/value_function/intersection_valfunc.npy", intersection_valfunc)
+# np.save("/home/anjianl/Desktop/project/optimized_dp/data/map/value_function/intersection_valfunc_correct.npy", intersection_valfunc_correctify)
+#
+# # plt.imshow(intersection_fmm_map_downsampled.T)
+# # plt.show()
 
-intersection_fmm_map = np.load("/home/anjianl/Desktop/project/optimized_dp/data/map/obstacle_map/intersection_fmm_map.npy")
-roundabout_fmm_map = np.load("/home/anjianl/Desktop/project/optimized_dp/data/map/obstacle_map/roundabout_fmm_map.npy")
+##################################################################################################################################
 
-intersection_fmm_map_downsampled = intersection_fmm_map[::2, ::2]
+# """
+# roundabout
+# xmin:  956.7 xmax:  1073.4
+# ymin:  954.0 ymax:  1046.0
+# size is  929 * 734 (x * y)
+# dx, dy is 0.12561894510226054 0.12534059945504086
+# roundabout fmm downsampled size is (465, 367)
+# """
+
+roundabout_obs = np.load("/home/anjianl/Desktop/project/optimized_dp/data/map/obstacle_map/roundabout_obs_map.npy").T
+# roundabout_curbs = np.load("/home/anjianl/Desktop/project/optimized_dp/data/map/obstacle_map/roundabout_curbs.npy")
+roundabout_x_min, roundabout_x_max = 956.7, 1073.4
+roundabout_y_min, roundabout_y_max = 954.0, 1046.0
+roundabout_dx, roundabout_dy = (roundabout_x_max - roundabout_x_min) / np.shape(roundabout_obs)[0], (roundabout_y_max - roundabout_y_min) / np.shape(roundabout_obs)[1]
+
+print("roundabout")
+print("xmin: ", roundabout_x_min, "xmax: ", roundabout_x_max)
+print("ymin: ", roundabout_y_min, "ymax: ", roundabout_y_max)
+print("size is ", np.shape(roundabout_obs)[0], np.shape(roundabout_obs)[1])
+print("dx, dy is", roundabout_dx, roundabout_dy)
+
+roundabout_fmm_prepare = roundabout_obs
+roundabout_fmm_prepare[roundabout_obs == 0] = - 1
+roundabout_fmm_prepare[roundabout_obs == 1] = 1
+roundabout_fmm_map = skfmm.distance(roundabout_fmm_prepare, dx=[roundabout_dx, roundabout_dy])
+roundabout_fmm_map = - roundabout_fmm_map
+np.save("/home/anjianl/Desktop/project/optimized_dp/data/map/obstacle_map/roundabout_fmm_map.npy", roundabout_fmm_map)
+
 roundabout_fmm_map_downsampled = roundabout_fmm_map[::2, ::2]
+print("roundabout fmm downsampled size is", np.shape(roundabout_fmm_map_downsampled))
+np.save("/home/anjianl/Desktop/project/optimized_dp/data/map/obstacle_map/roundabout_fmm_map_downsampled.npy", roundabout_fmm_map_downsampled)
 
-# np.save("/home/anjianl/Desktop/project/optimized_dp/data/map/obstacle_map/intersection_fmm_map_downsampled.npy", intersection_fmm_map)
-# np.save("/home/anjianl/Desktop/project/optimized_dp/data/map/obstacle_map/roundabout_fmm_map_downsampled.npy", roundabout_fmm_map)
-
-intersection_valfunc = np.zeros((366, 466, 24, 39))
-roundabout_valfunc = np.zeros((367, 465, 24, 39))
-
+roundabout_valfunc = np.zeros((465, 367, 24, 39))
 for i in range(24):
     for j in range(39):
-        intersection_valfunc[:, :, i, j] = intersection_fmm_map_downsampled
         roundabout_valfunc[:, :, i, j] = roundabout_fmm_map_downsampled
 
-# np.save("/home/anjianl/Desktop/project/optimized_dp/data/map/obstacle_map/intersection_valfunc.npy", intersection_valfunc)
-# np.save("/home/anjianl/Desktop/project/optimized_dp/data/map/obstacle_map/roundabout_valfunc.npy", roundabout_valfunc)
+# TODO, reverse y axis, I don't know why
+roundabout_valfunc_correctify = np.zeros(np.shape(roundabout_valfunc))
+for i in range(367):
+    roundabout_valfunc_correctify[:, i, :, :] = roundabout_valfunc[:, 366 - i, :, :]
 
-# plt.contour(roundabout_fmm_map, levels=[0])
-# plt.contour(roundabout_obs, levels=[0])
+np.save("/home/anjianl/Desktop/project/optimized_dp/data/map/value_function/roundabout_valfunc.npy", roundabout_valfunc)
+np.save("/home/anjianl/Desktop/project/optimized_dp/data/map/value_function/roundabout_valfunc_correct.npy", roundabout_valfunc_correctify)
 
-plt.imshow(intersection_fmm_map)
-plt.show()
-
-# plt.imshow(roundabout_fmm_map)
+#
+# plt.imshow(roundabout_fmm_map_downsampled.T)
 # plt.show()
