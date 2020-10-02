@@ -114,42 +114,42 @@ def main():
              print("tNow is ", tNow)
 
              # Saving reachable set and control data into disk
-             if tNow == 0.00516090914607048 or tNow == 2 or tNow == 3 or tNow == 4:
+             if tNow == 0.00483317207545042 or tNow == 2 or tNow == 3 or tNow == 4:
                 print("Max diff. from previous time step: {}".format(np.max(np.abs(V_1.asnumpy() - V1_old))))
                 print("Avg diff. from previous time step: {}".format(np.mean(np.abs(V_1.asnumpy() - V1_old))))
 
                 # TODO: change scenario here
-                # Intersection ###############################################################################
-                file_dir = '/home/anjianl/Desktop/project/optimized_dp/data/brs/0929/obstacle/intersection'
-                if not os.path.exists(file_dir):
-                    os.mkdir(file_dir)
-                file_brs_path = file_dir + '/bicycle4d_brs_intersection' + '_t_%.2f.npy'
-                np.save(file_brs_path % tNow, V_1.asnumpy())
-                print("intersection brs is saved!")
-
-                # Save control data
-                file_ctrl_beta_path = file_dir + '/bicycle4d_intersection_ctrl_beta' + '_t_%.2f.npy'
-                file_ctrl_acc_path = file_dir + '/bicycle4d_intersection_ctrl_acc' + '_t_%.2f.npy'
-                np.save(file_ctrl_beta_path % tNow, uOpt_1.asnumpy())
-                print("intersection control beta is saved!")
-                np.save(file_ctrl_acc_path % tNow, uOpt_2.asnumpy())
-                print("intersection control acc is saved!")
-
-                # # Roundabout ##################################################################################
-                # file_dir = '/home/anjianl/Desktop/project/optimized_dp/data/brs/0929/obstacle/roundabout'
+                # # Intersection ###############################################################################
+                # file_dir = '/home/anjianl/Desktop/project/optimized_dp/data/brs/0929/obstacle/intersection'
                 # if not os.path.exists(file_dir):
                 #     os.mkdir(file_dir)
-                # file_brs_path = file_dir + '/bicycle4d_brs_roundabout' + '_t_%.2f.npy'
+                # file_brs_path = file_dir + '/bicycle4d_brs_intersection' + '_t_%.2f.npy'
                 # np.save(file_brs_path % tNow, V_1.asnumpy())
-                # print("roundabout brs is saved!")
+                # print("intersection brs is saved!")
                 #
                 # # Save control data
-                # file_ctrl_beta_path = file_dir + '/bicycle4d_roundabout_ctrl_beta' + '_t_%.2f.npy'
-                # file_ctrl_acc_path = file_dir + '/bicycle4d_roundabout_ctrl_acc' + '_t_%.2f.npy'
+                # file_ctrl_beta_path = file_dir + '/bicycle4d_intersection_ctrl_beta' + '_t_%.2f.npy'
+                # file_ctrl_acc_path = file_dir + '/bicycle4d_intersection_ctrl_acc' + '_t_%.2f.npy'
                 # np.save(file_ctrl_beta_path % tNow, uOpt_1.asnumpy())
-                # print("roundabout control beta is saved!")
+                # print("intersection control beta is saved!")
                 # np.save(file_ctrl_acc_path % tNow, uOpt_2.asnumpy())
-                # print("roundabout control acc is saved!")
+                # print("intersection control acc is saved!")
+
+                # # Roundabout ##################################################################################
+                file_dir = '/home/anjianl/Desktop/project/optimized_dp/data/brs/0929/obstacle/roundabout'
+                if not os.path.exists(file_dir):
+                    os.mkdir(file_dir)
+                file_brs_path = file_dir + '/bicycle4d_brs_roundabout' + '_t_%.2f.npy'
+                np.save(file_brs_path % tNow, V_1.asnumpy())
+                print("roundabout brs is saved!")
+
+                # Save control data
+                file_ctrl_beta_path = file_dir + '/bicycle4d_roundabout_ctrl_beta' + '_t_%.2f.npy'
+                file_ctrl_acc_path = file_dir + '/bicycle4d_roundabout_ctrl_acc' + '_t_%.2f.npy'
+                np.save(file_ctrl_beta_path % tNow, uOpt_1.asnumpy())
+                print("roundabout control beta is saved!")
+                np.save(file_ctrl_acc_path % tNow, uOpt_2.asnumpy())
+                print("roundabout control acc is saved!")
 
         print("Max diff. from previous time step: {}".format(np.max(np.abs(V_1.asnumpy() - V1_old))))
         print("Avg diff. from previous time step: {}".format(np.mean(np.abs(V_1.asnumpy() - V1_old))))

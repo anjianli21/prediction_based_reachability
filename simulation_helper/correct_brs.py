@@ -27,20 +27,40 @@ import numpy as np
 
 ##########################################################################################################################
 # For 4D bicycle obstacles.
-file_dir = "/home/anjianl/Desktop/project/optimized_dp/data/brs/0929/obstacle/intersection/"
-file_dir_new = "/home/anjianl/Desktop/project/optimized_dp/data/brs/0929-correct/obstacle/intersection/"
+# intersection
+# file_dir = "/home/anjianl/Desktop/project/optimized_dp/data/brs/0929/obstacle/intersection/"
+# file_dir_new = "/home/anjianl/Desktop/project/optimized_dp/data/brs/0929-correct/obstacle/intersection/"
+#
+# # brs
+# intersection_brs = np.load(file_dir + "bicycle4d_brs_intersection_t_3.00.npy")
+# intersection_brs_correct = np.append(intersection_brs, intersection_brs[:, :, 0, None, :], axis=2)
+# np.save(file_dir_new + "bicycle4d_brs_intersection_t_3.00.npy", intersection_brs_correct)
+#
+# # ctrl acc
+# intersection_ctrl_acc = np.load(file_dir + "bicycle4d_intersection_ctrl_acc_t_3.00.npy")
+# intersection_ctrl_acc_correct = np.append(intersection_ctrl_acc, intersection_ctrl_acc[:, :, 0, None, :], axis=2)
+# np.save(file_dir_new + "bicycle4d_intersection_ctrl_acc_t_3.00.npy", intersection_ctrl_acc_correct)
+#
+# # ctrl beta
+# intersection_ctrl_beta = np.load(file_dir + "bicycle4d_intersection_ctrl_beta_t_3.00.npy")
+# intersection_ctrl_beta_correct = np.append(intersection_ctrl_beta, intersection_ctrl_beta[:, :, 0, None, :], axis=2)
+# np.save(file_dir_new + "bicycle4d_intersection_ctrl_beta_t_3.00.npy", intersection_ctrl_beta_correct)
+
+# roundabout
+file_dir = "/home/anjianl/Desktop/project/optimized_dp/data/brs/0929/obstacle/roundabout/"
+file_dir_new = "/home/anjianl/Desktop/project/optimized_dp/data/brs/0929-correct/obstacle/roundabout/"
 
 # brs
-intersection_brs = np.load(file_dir + "bicycle4d_brs_intersection_t_3.00.npy")
-intersection_brs_correct = np.append(intersection_brs, intersection_brs[:, :, 0, None, :], axis=2)
-np.save(file_dir_new + "bicycle4d_brs_intersection_t_3.00.npy", intersection_brs_correct)
+roundabout_brs = np.load(file_dir + "bicycle4d_brs_roundabout_t_3.00.npy")
+roundabout_brs_correct = np.append(roundabout_brs, roundabout_brs[:, :, 0, None, :], axis=2)
+np.save(file_dir_new + "bicycle4d_brs_roundabout_t_3.00.npy", roundabout_brs_correct)
 
 # ctrl acc
-intersection_ctrl_acc = np.load(file_dir + "bicycle4d_intersection_ctrl_acc_t_3.00.npy")
-intersection_ctrl_acc_correct = np.append(intersection_ctrl_acc, intersection_ctrl_acc[:, :, 0, None, :], axis=2)
-np.save(file_dir_new + "bicycle4d_intersection_ctrl_acc_t_3.00.npy", intersection_ctrl_acc_correct)
+roundabout_ctrl_acc = np.load(file_dir + "bicycle4d_roundabout_ctrl_acc_t_3.00.npy")
+roundabout_ctrl_acc_correct = np.append(roundabout_ctrl_acc, roundabout_ctrl_acc[:, :, 0, None, :], axis=2)
+np.save(file_dir_new + "bicycle4d_roundabout_ctrl_acc_t_3.00.npy", roundabout_ctrl_acc_correct)
 
 # ctrl beta
-intersection_ctrl_beta = np.load(file_dir + "bicycle4d_intersection_ctrl_beta_t_3.00.npy")
-intersection_ctrl_beta_correct = np.append(intersection_ctrl_beta, intersection_ctrl_beta[:, :, 0, None, :], axis=2)
-np.save(file_dir_new + "bicycle4d_intersection_ctrl_beta_t_3.00.npy", intersection_ctrl_beta_correct)
+roundabout_ctrl_beta = np.load(file_dir + "bicycle4d_roundabout_ctrl_beta_t_3.00.npy")
+roundabout_ctrl_beta_correct = np.append(roundabout_ctrl_beta, roundabout_ctrl_beta[:, :, 0, None, :], axis=2)
+np.save(file_dir_new + "bicycle4d_roundabout_ctrl_beta_t_3.00.npy", roundabout_ctrl_beta_correct)

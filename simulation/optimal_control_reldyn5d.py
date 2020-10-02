@@ -5,10 +5,12 @@ import sys
 
 from prediction.process_prediction_v3 import ProcessPredictionV3
 from prediction.predict_mode_v3 import PredictModeV3
-
+from skimage import measure
 from scipy.interpolate import RegularGridInterpolator
 
-class OptimalControl(object):
+from matplotlib import pyplot as plt
+
+class OptimalControlRelDyn5D(object):
     """"
     This module offers safety check for a pairwise car interaction (robot car, human car), and generates optimal control
     (beta_r, a_r) of collision avoidance for the robot car with 5D relative dynamics.
@@ -45,17 +47,18 @@ class OptimalControl(object):
 
         # Data path
         if '/Users/anjianli/anaconda3/envs/hcl-env/lib/python3.8' not in sys.path:
-            self.data_path = "/home/anjianl/Desktop/project/optimized_dp/data/brs/0910-correct/"
+            # TODO: use latest brs 0929-correct
+            self.data_path = "/home/anjianl/Desktop/project/optimized_dp/data/brs/0929-correct/"
         else:
-            self.data_path = "/Users/anjianli/Desktop/robotics/project/optimized_dp/data/brs/0910-correct/"
+            self.data_path = "/Users/anjianli/Desktop/robotics/project/optimized_dp/data/brs/0929-correct/"
 
         # Computational bound for valfunc and optctrl
         # (x_rel, y_rel, psi_rel, v_h, v_r)
         self.x_rel_bound = [-10, 10]
         self.y_rel_bound = [-10, 10]
         self.psi_rel_bound = [-math.pi, math.pi]
-        self.v_h_bound = [0, 17]
-        self.v_r_bound = [0, 17]
+        self.v_h_bound = [-1, 18] # New brs considers speed obstacles
+        self.v_r_bound = [-1, 18] # New brs considers speed obstacles
 
     def get_optctrl(self):
 
@@ -86,16 +89,21 @@ class OptimalControl(object):
             # print("current value function is", self.curr_valfunc)
             # print("current beta_r", self.curr_optctrl_beta_r)
             # print("current a_r", self.curr_optctrl_a_r)
+
+            # Get 0 level set
+            self.contour_rel_coordinate = self.get_contour(self.valfunc, self.rel_states)
+
         else:
             # print("the relative states is outside of computation range!")
             self.curr_valfunc = 100
             self.curr_optctrl_beta_r = 0
             self.curr_optctrl_a_r = 0
+            self.contour_rel_coordinate = np.asarray([[0], [0]])
             # print("current value function is", self.curr_valfunc)
             # print("current beta_r", self.curr_optctrl_beta_r)
             # print("current a_r", self.curr_optctrl_a_r)
 
-        return self.rel_states, self.curr_valfunc, self.curr_optctrl_beta_r, self.curr_optctrl_a_r
+        return self.rel_states, self.curr_valfunc, self.curr_optctrl_beta_r, self.curr_optctrl_a_r, self.contour_rel_coordinate
 
     def get_rel_states(self, human_curr_states, robot_curr_states):
 
@@ -148,9 +156,9 @@ class OptimalControl(object):
 
         x_rel = np.linspace(-10, 10, num=41)
         y_rel = np.linspace(-10, 10, num=41)
-        psi_rel = np.linspace(-math.pi, math.pi, num=37)
-        v_h = np.linspace(0, 17, num=35)
-        v_r = np.linspace(0, 17, num=35)
+        psi_rel = np.linspace(-math.pi, math.pi, num=25)
+        v_h = np.linspace(-1, 18, num=39)
+        v_r = np.linspace(-1, 18, num=39)
 
         my_interpolating_function = RegularGridInterpolator((x_rel, y_rel, psi_rel, v_h, v_r), data)
 
@@ -164,6 +172,24 @@ class OptimalControl(object):
 
         return my_interpolating_function(curr_point)
 
+    def get_contour(self, data, point):
+
+        curr_v_h = point['v_h']
+        curr_v_r = point['v_r']
+        curr_psi_rel = point['psi_rel']
+
+        v_h_index = int((curr_v_h - self.v_h_bound[0]) * 2)
+        v_r_index = int((curr_v_r - self.v_r_bound[0]) * 2)
+        psi_index = int((curr_psi_rel - self.psi_rel_bound[0]) * 2)
+
+        x_y_val_func = np.squeeze(self.valfunc[:, :, psi_index, v_h_index, v_r_index])
+        contour_set = np.squeeze(np.asarray(measure.find_contours(x_y_val_func, level=0)))
+        # plt.plot(contour_set[:, 0], contour_set[:, 1])
+        # plt.show()
+
+        contour_rel_coordinate = np.asarray([contour_set[:, 0] * 0.5 - 10, contour_set[:, 1] * 0.5 - 10])
+
+        return contour_rel_coordinate
 
 if __name__ == "__main__":
 
@@ -175,7 +201,7 @@ if __name__ == "__main__":
                    6.187466767999999, 6.143547265, 6.092635555, 6.035747675, 5.971871147000001]}
 
     start_time = time.time()
-    optctrl = OptimalControl(human_curr_states=hcs, robot_curr_states=rcs, h_drv_mode=1, h_drv_mode_pro=[0, 1, 0, 0, 0, 0])
+    optctrl = OptimalControlRelDyn5D(human_curr_states=hcs, robot_curr_states=rcs, h_drv_mode=1, h_drv_mode_pro=[0, 1, 0, 0, 0, 0])
     optctrl.get_optctrl()
 
     end_time = time.time()

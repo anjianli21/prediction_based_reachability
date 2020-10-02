@@ -18,10 +18,10 @@ from simulation.stanley_controller import *
 from simulation.human_car import *
 from simulation.optimal_control_bicycle4d import OptimalControlBicycle4D
 
-class Simulator(object):
+class Simulator2(object):
 
     """
-    For intersection scenario simulation
+    For roundabout scenario simulation
 
     a big loop over time
 
@@ -40,7 +40,7 @@ class Simulator(object):
 
     def __init__(self):
 
-        self.scenario = "intersection"
+        self.scenario = "roundabout"
 
         if '/Users/anjianli/anaconda3/envs/hcl-env/lib/python3.8' not in sys.path:
             self.file_dir_intersection = '/home/anjianl/Desktop/project/optimized_dp/data/intersection-data'
@@ -50,20 +50,20 @@ class Simulator(object):
             self.file_dir_intersection = '/Users/anjianli/Desktop/robotics/project/optimized_dp/data/intersection-data'
             self.file_dir_roundabout = '/Users/anjianli/Desktop/robotics/project/optimized_dp/data/roundabout-data'
 
-        self.huamn_car_file_name_intersection = 'car_20_vid_09.csv'
-        self.robot_car_file_name_intersection = 'car_36_vid_11_refPath.csv'
         # Trial 1
-        # self.human_start_step = 180
-        # self.robot_target_speed = 8
-        # self.robot_start_step = 0
-        # # Trial 2
-        self.human_start_step = 230
-        self.robot_target_speed = 1
-        self.robot_start_step = 79
-        # Trial 3
+        # self.huamn_car_file_name_roundabout = 'car_2.csv'
+        # self.robot_car_file_name_roundabout = 'car_4_refPath.csv'
         # self.human_start_step = 0
-        # self.robot_target_speed = 8
-        # self.robot_start_step = 79
+        # self.robot_target_speed = 12
+        # self.robot_start_step = 0
+
+        # Trial 2
+        self.huamn_car_file_name_roundabout = 'car_9.csv'
+        self.robot_car_file_name_roundabout = 'car_6_refPath.csv'
+        self.human_start_step = 0
+        self.robot_target_speed = 2
+        self.robot_start_step = 75
+
 
         self.poly_num = 30
 
@@ -73,8 +73,8 @@ class Simulator(object):
         self.use_safe_control = True
         # self.use_safe_control = False
 
-        # self.use_prediction = True
-        self.use_prediction = False
+        self.use_prediction = True
+        # self.use_prediction = False
 
         self.save_plot = False
 
@@ -94,11 +94,14 @@ class Simulator(object):
         dt = 0.1
 
         # Read prediction as human car's trajectory
-        human_car_traj = self.get_traj_from_prediction(filename=self.huamn_car_file_name_intersection)
+        human_car_traj = self.get_traj_from_prediction(filename=self.huamn_car_file_name_roundabout)
+        human_car_traj['x_t'] = [x + 1000 for x in human_car_traj['x_t']] # TODO: modify human car traj x
+        human_car_traj['y_t'] = [y + 1000 for y in human_car_traj['y_t']] # TODO: modify human car traj y
 
         # Read ref path as robot_car_traj
-        robot_car_traj_ref = self.get_traj_from_ref_path(filename=self.robot_car_file_name_intersection)
-        # robot_car_traj_ref['y_t'] = [x+5 for x in robot_car_traj_ref['y_t']] # TODO: modify robot car traj y
+        robot_car_traj_ref = self.get_traj_from_ref_path(filename=self.robot_car_file_name_roundabout)
+        robot_car_traj_ref['x_t'] = [x + 1000 for x in robot_car_traj_ref['x_t']] # TODO: modify robot car traj x
+        robot_car_traj_ref['y_t'] = [y + 1000 for y in robot_car_traj_ref['y_t']] # TODO: modify robot car traj y
 
         # Init human state for simulation
         human_start_step = self.human_start_step
@@ -136,7 +139,7 @@ class Simulator(object):
                 break
 
             ## TODO: In RelDyn5D, get reachability value function and optimal control for robot car
-            rel_states, val_func_reldyn5d, optctrl_beta_r_reldyn5d, optctrl_a_r_reldyn5d, contour_rel_coordinate \
+            rel_states, val_func_reldyn5d, optctrl_beta_r_reldyn5d, optctrl_a_r_reldyn5d, contour_rel_coordinate\
                 = OptimalControlRelDyn5D(
                 human_curr_states={'x_h': human_car.x_h, 'y_h': human_car.y_h, 'psi_h': human_car.psi_h, 'v_h': human_car.v_h},
                 robot_curr_states={'x_r': robot_car.x, 'y_r': robot_car.y, 'psi_r': robot_car.yaw, 'v_r': robot_car.v},
@@ -192,10 +195,10 @@ class Simulator(object):
             y_h_list.append(human_car.y_h)
 
             if '/Users/anjianli/anaconda3/envs/hcl-env/lib/python3.8' in sys.path:
-                intersection_curbs = np.load(
-                    "/Users/anjianli/Desktop/robotics/project/optimized_dp/data/map/obstacle_map/intersection_curbs.npy")
+                roundabout_curbs = np.load(
+                    "/Users/anjianli/Desktop/robotics/project/optimized_dp/data/map/obstacle_map/roundabout_curbs.npy")
             else:
-                intersection_curbs = np.load("/home/anjianl/Desktop/project/optimized_dp/data/map/obstacle_map/intersection_curbs.npy")
+                roundabout_curbs = np.load("/home/anjianl/Desktop/project/optimized_dp/data/map/obstacle_map/roundabout_curbs.npy")
 
             if self.show_animation:  # pragma: no cover
                 plt.cla()
@@ -208,7 +211,7 @@ class Simulator(object):
                 plt.plot(x_r_list[-1], y_r_list[-1], "xg", label="robot pos")
                 plt.plot(x_h_list[-1], y_h_list[-1], "xr", label="human pos")
                 plt.plot(reachable_set_coordinate[0, :], reachable_set_coordinate[1, :], "y")
-                plt.scatter(intersection_curbs[0], intersection_curbs[1], color='black', linewidths=0.03)
+                plt.scatter(roundabout_curbs[0], roundabout_curbs[1], color='black', linewidths=0.03)
                 plt.axis("equal")
                 plt.legend()
                 plt.grid(True)
@@ -232,12 +235,37 @@ class Simulator(object):
 
         print("minimum distance is ", min_dist)
 
+        if self.show_animation:  # pragma: no cover
+            # for stopping simulation with the esc key.
+            plt.gcf().canvas.mpl_connect('key_release_event',
+                                         lambda event: [exit(0) if event.key == 'escape' else None])
+            plt.plot(cx, cy, ".c", label="robot planning")
+            plt.plot(x_r_list, y_r_list, "-b", label="robot trajectory")
+            plt.plot(x_h_list, y_h_list, "-r", label="human trajectory")
+            plt.plot(x_r_list[-1], y_r_list[-1], "xg", label="robot pos")
+            plt.plot(x_h_list[-1], y_h_list[-1], "xr", label="human pos")
+            plt.scatter(roundabout_curbs[0], roundabout_curbs[1], color='black', linewidths=0.03)
+            plt.axis("equal")
+            plt.legend()
+            plt.grid(True)
+            if min(val_func_reldyn5d, val_func_bicycle4d) < 0 and self.use_safe_control is True:
+                if val_func_reldyn5d <= val_func_bicycle4d:
+                    plt.title(
+                        "robot speed (m/s):" + str(robot_car.v)[
+                                               :4] + ", human mode:" + mode_name + ", RelDyn5D safe controller in effect!")
+                else:
+                    plt.title(
+                        "robot speed (m/s):" + str(robot_car.v)[
+                                               :4] + ", human mode:" + mode_name + ", Bicycle4D safe controller in effect!")
+            else:
+                plt.title("robot speed (m/s):" + str(robot_car.v)[:4] + ", human mode:" + mode_name)
+            plt.show()
 
     def get_traj_from_prediction(self, filename):
 
         # Read trajectory from prediction
-        if self.scenario == "intersection":
-            traj_file_name = self.file_dir_intersection + '/' + filename
+        if self.scenario == "roundabout":
+            traj_file_name = self.file_dir_roundabout + '/' + filename
         else:
             traj_file_name = ""
         traj_file = pandas.read_csv(traj_file_name)
@@ -272,8 +300,8 @@ class Simulator(object):
     def get_traj_from_ref_path(self, filename):
 
         # Read trajectory from prediction
-        if self.scenario == "intersection":
-            traj_file_name = self.file_dir_intersection + '/' + filename
+        if self.scenario == "roundabout":
+            traj_file_name = self.file_dir_roundabout + '/' + filename
         else:
             traj_file_name = ""
 
@@ -348,4 +376,4 @@ class Simulator(object):
 
 if __name__ == "__main__":
 
-    Simulator().simulate()
+    Simulator2().simulate()
