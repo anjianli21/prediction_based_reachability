@@ -32,7 +32,7 @@ class PlotReldyn5D(object):
         # v_h = 6.0
         # v_r = 0.0
 
-        psi = 90
+        psi = - 179
         v_h = 6.0
         v_r = 2.0
 
@@ -47,13 +47,13 @@ class PlotReldyn5D(object):
         # V_6 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0910/mode-1/reldyn5d_brs_mode-1_t_{:.2f}.npy".format(time))
 
         V_0 = np.load(
-            "/home/anjianl/Desktop/project/optimized_dp/data/brs/0928-correct/mode0/reldyn5d_brs_mode0_t_{:.2f}.npy".format(time))
-        V_1 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0928-correct/mode1/reldyn5d_brs_mode1_t_{:.2f}.npy".format(time))
-        V_2 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0928-correct/mode2/reldyn5d_brs_mode2_t_{:.2f}.npy".format(time))
-        V_3 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0928-correct/mode3/reldyn5d_brs_mode3_t_{:.2f}.npy".format(time))
-        V_4 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0928-correct/mode4/reldyn5d_brs_mode4_t_{:.2f}.npy".format(time))
-        V_5 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0928-correct/mode5/reldyn5d_brs_mode5_t_{:.2f}.npy".format(time))
-        V_6 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0929/mode-1/reldyn5d_brs_mode-1_t_{:.2f}.npy".format(time))
+            "/home/anjianl/Desktop/project/optimized_dp/data/brs/0929-correct/mode0/reldyn5d_brs_mode0_t_{:.2f}.npy".format(time))
+        V_1 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0929-correct/mode1/reldyn5d_brs_mode1_t_{:.2f}.npy".format(time))
+        V_2 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0929-correct/mode2/reldyn5d_brs_mode2_t_{:.2f}.npy".format(time))
+        V_3 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0929-correct/mode3/reldyn5d_brs_mode3_t_{:.2f}.npy".format(time))
+        V_4 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0929-correct/mode4/reldyn5d_brs_mode4_t_{:.2f}.npy".format(time))
+        V_5 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0929-correct/mode5/reldyn5d_brs_mode5_t_{:.2f}.npy".format(time))
+        V_6 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0929-correct/mode-1/reldyn5d_brs_mode-1_t_{:.2f}.npy".format(time))
         # V_6 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0929/mode-1/reldyn5d_brs_mode-1_t_0.00.npy")
 
         x_grid, y_grid = self.get_xy_grid(g, [0, 1])

@@ -91,7 +91,10 @@ class OptimalControlRelDyn5D(object):
             # print("current a_r", self.curr_optctrl_a_r)
 
             # Get 0 level set
-            self.contour_rel_coordinate = self.get_contour(self.valfunc, self.rel_states)
+            try:
+                self.contour_rel_coordinate = self.get_contour(self.valfunc, self.rel_states)
+            except IndexError:
+                self.contour_rel_coordinate = np.asarray([[0], [0]])
 
         else:
             # print("the relative states is outside of computation range!")
@@ -134,8 +137,8 @@ class OptimalControlRelDyn5D(object):
 
         mode_num, mode_probability = PredictModeV3().decide_mode(acc=acc[0], omega=omega[0])
 
-        print("current driving mode is", mode_num)
-        print("mode probability is", mode_probability)
+        # print("current driving mode is", mode_num)
+        # print("mode probability is", mode_probability)
 
         return mode_num, mode_probability
 
@@ -180,7 +183,7 @@ class OptimalControlRelDyn5D(object):
 
         v_h_index = int((curr_v_h - self.v_h_bound[0]) * 2)
         v_r_index = int((curr_v_r - self.v_r_bound[0]) * 2)
-        psi_index = int((curr_psi_rel - self.psi_rel_bound[0]) * 2)
+        psi_index = int((curr_psi_rel - self.psi_rel_bound[0]) / (math.pi / 12))
 
         x_y_val_func = np.squeeze(self.valfunc[:, :, psi_index, v_h_index, v_r_index])
         contour_set = np.squeeze(np.asarray(measure.find_contours(x_y_val_func, level=0)))

@@ -60,10 +60,16 @@ class Simulator2(object):
         # Trial 2
         self.huamn_car_file_name_roundabout = 'car_9.csv'
         self.robot_car_file_name_roundabout = 'car_6_refPath.csv'
-        self.human_start_step = 0
+        self.human_start_step = 5
         self.robot_target_speed = 2
-        self.robot_start_step = 75
+        self.robot_start_step = 80
 
+        # Trial 3
+        # self.huamn_car_file_name_roundabout = 'car_24.csv'
+        # self.robot_car_file_name_roundabout = 'car_6_refPath.csv'
+        # self.human_start_step = 30
+        # self.robot_target_speed = 2
+        # self.robot_start_step = 45
 
         self.poly_num = 30
 
@@ -76,7 +82,8 @@ class Simulator2(object):
         self.use_prediction = True
         # self.use_prediction = False
 
-        self.save_plot = False
+        self.save_plot = True
+        # self.save_plot = False
 
     def simulate(self):
 
@@ -150,9 +157,15 @@ class Simulator2(object):
                 robot_curr_states={'x_r': robot_car.x, 'y_r': robot_car.y, 'psi_r': robot_car.yaw, 'v_r': robot_car.v},
                 scenario=self.scenario).get_optctrl()
 
-            reachable_set_coordinate = np.asarray([contour_rel_coordinate[0, :] + robot_car.x, contour_rel_coordinate[1, :] + robot_car.y])
+            # We get the contour coordinate, which is centered around robot car, and oriented at the robot car's heading
+            # Thus when we transfer it to world coordinate, we should use (x * cos(yaw) - y * sin(yaw), x * sin(yaw) + y * cos(yaw))
+            reachable_set_coordinate = np.asarray([
+                contour_rel_coordinate[0, :] * np.cos(robot_car.yaw) - contour_rel_coordinate[1, :] * np.sin(
+                    robot_car.yaw) + robot_car.x,
+                contour_rel_coordinate[0, :] * np.sin(robot_car.yaw) + contour_rel_coordinate[1, :] * np.cos(
+                    robot_car.yaw) + robot_car.y])
 
-            print("bicycle4D, value function is", val_func_bicycle4d, optctrl_beta_r_bicycle4d, optctrl_a_r_bicycle4d)
+            print("Reldyn5D value function is", val_func_reldyn5d, ", Bicycle4D value function is", val_func_bicycle4d)
 
             curr_min_dist = np.sqrt(rel_states['x_rel'] ** 2 + rel_states['y_rel'] ** 2)
             min_dist = min(curr_min_dist, min_dist)
@@ -164,8 +177,14 @@ class Simulator2(object):
                     if val_func_reldyn5d <= val_func_bicycle4d:
                         print("RelDyn5D safe controller in effect!")
                         print("optimal control beta is", optctrl_beta_r_reldyn5d, " acceleration is", optctrl_a_r_reldyn5d)
-                        robot_car.safe_update(optctrl_beta_r_reldyn5d, optctrl_a_r_reldyn5d)
                         # time.sleep(3)
+
+                        # TODO: don't use reachability controller, use deceleration
+                        robot_car.safe_update(optctrl_beta_r_reldyn5d, optctrl_a_r_reldyn5d)
+                        di, target_idx = stanley_control(robot_car, cx, cy, cyaw, target_idx)
+
+                        # robot_car.update(-5, di)
+
                     else:
                         print("Bicycle4D safe controller in effect!")
                         print("optimal control beta is", optctrl_beta_r_bicycle4d, " acceleration is", optctrl_a_r_bicycle4d)
@@ -229,9 +248,9 @@ class Simulator2(object):
 
                 if self.save_plot:
                     if '/Users/anjianli/anaconda3/envs/hcl-env/lib/python3.8' in sys.path:
-                        plt.savefig("/Users/anjianli/Desktop/robotics/project/optimized_dp/result/simulation/2/t_{:.2f}_pred.png".format(curr_t))
+                        plt.savefig("/Users/anjianli/Desktop/robotics/project/optimized_dp/result/simulation/1002/roundabout/2_np/t_{:.2f}_pred.png".format(curr_t))
                     else:
-                        plt.savefig("/home/anjianl/Desktop/project/optimized_dp/result/simulation/2/t_{:.2f}_nopred.png".format(curr_t))
+                        plt.savefig("/home/anjianl/Desktop/project/optimized_dp/result/simulation/1002/roundabout/2/t_{:.2f}_nopred.png".format(curr_t))
 
         print("minimum distance is ", min_dist)
 

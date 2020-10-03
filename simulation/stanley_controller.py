@@ -24,6 +24,7 @@ Kp = 1.0  # speed proportional gain
 dt = 0.1  # [s] time difference
 L = 2.9  # [m] Wheel base of vehicle
 max_steer = np.radians(30.0)  # [rad] max steering angle
+min_v = 0.0
 
 show_animation = True
 
@@ -61,10 +62,11 @@ class RobotState(object):
         self.y += self.v * np.sin(self.yaw) * dt
         self.yaw += self.v / L * np.tan(delta) * dt
         self.yaw = normalize_angle(self.yaw)
-        self.v += acceleration * dt
+        self.v = max(min_v, self.v + acceleration * dt)
 
     def safe_update(self, beta, acceleration):
 
+        print(type(beta))
         beta = beta.item()
         acceleration = acceleration.item()
         self.x += self.v * np.cos(self.yaw + beta) * dt

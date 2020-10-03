@@ -54,7 +54,7 @@ class OptimalControlBicycle4D(object):
 
     def get_optctrl(self):
 
-        print(self.robot_curr_states)
+        # print(self.robot_curr_states)
 
         if self.check_valid(self.robot_curr_states):
 
@@ -125,7 +125,7 @@ class OptimalControlBicycle4D(object):
         curr_psi_r = point['psi_r']
         curr_v_r = point['v_r']
 
-        print(curr_x_r, curr_y_r, curr_psi_r, curr_v_r)
+        # print(curr_x_r, curr_y_r, curr_psi_r, curr_v_r)
 
         curr_point = np.asarray([curr_x_r, curr_y_r, curr_psi_r, curr_v_r])
 
