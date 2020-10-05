@@ -67,18 +67,18 @@ class Simulator2(object):
         # self.robot_start_step = 80
 
         # # Trial 3 TODO: use prediction resulting in smaller deviation
-        # self.huamn_car_file_name_roundabout = 'car_24.csv'
-        # self.robot_car_file_name_roundabout = 'car_6_refPath.csv'
-        # self.human_start_step = 31
-        # self.robot_target_speed = 2
-        # self.robot_start_step = 45
+        self.huamn_car_file_name_roundabout = 'car_24.csv'
+        self.robot_car_file_name_roundabout = 'car_6_refPath.csv'
+        self.human_start_step = 31
+        self.robot_target_speed = 2
+        self.robot_start_step = 45
 
         # Trial 4 TODO: use prediction resulting in smaller deviation
-        self.huamn_car_file_name_roundabout = 'car_6.csv'
-        self.robot_car_file_name_roundabout = 'car_9_refPath.csv'
-        self.human_start_step = 35
-        self.robot_target_speed = 2
-        self.robot_start_step = 10
+        # self.huamn_car_file_name_roundabout = 'car_6.csv'
+        # self.robot_car_file_name_roundabout = 'car_9_refPath.csv'
+        # self.human_start_step = 35
+        # self.robot_target_speed = 2
+        # self.robot_start_step = 10
 
         # self.poly_num = 30
         # self.episode_len = 12
@@ -90,8 +90,8 @@ class Simulator2(object):
         self.use_safe_control = True
         # self.use_safe_control = False
 
-        self.use_prediction = True
-        # self.use_prediction = False
+        # self.use_prediction = True
+        self.use_prediction = False
 
         # self.save_plot = True
         self.save_plot = False
@@ -192,6 +192,14 @@ class Simulator2(object):
             min_deviation = max(curr_min_deviation, min_deviation)
             print("minimum deviation is ", min_deviation)
 
+            # Update human car
+            human_car.update(curr_step=curr_step_human)
+            x_h_list.append(human_car.x_h)
+            y_h_list.append(human_car.y_h)
+
+
+            #######################################
+            # Update robot car
             if self.use_safe_control is True:
                 # Check if reachability safe controller should be used
                 if min(val_func_bicycle4d, val_func_reldyn5d) < 0:
@@ -228,10 +236,10 @@ class Simulator2(object):
             x_r_list.append(robot_car.x)
             y_r_list.append(robot_car.y)
 
-            # Human car
-            human_car.update(curr_step=curr_step_human)
-            x_h_list.append(human_car.x_h)
-            y_h_list.append(human_car.y_h)
+            # # Human car
+            # human_car.update(curr_step=curr_step_human)
+            # x_h_list.append(human_car.x_h)
+            # y_h_list.append(human_car.y_h)
 
             if '/Users/anjianli/anaconda3/envs/hcl-env/lib/python3.8' in sys.path:
                 roundabout_curbs = np.load(

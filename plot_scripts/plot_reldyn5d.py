@@ -17,12 +17,14 @@ class PlotReldyn5D(object):
     def plot(self):
         # g = grid(np.array([-10.0, -10.0, -math.pi, 0, 0]), np.array([10.0, 10.0, math.pi, 17, 17]), 5,
         #          np.array([41, 41, 36, 35, 35]), [2])
-        g = grid(np.array([-10.0, -10.0, -math.pi, -1, -1]), np.array([10.0, 10.0, math.pi, 18, 18]), 5,
-                 np.array([41, 41, 24, 39, 39]), [2])
+        # g = grid(np.array([-10.0, -10.0, -math.pi, -1, -1]), np.array([10.0, 10.0, math.pi, 18, 18]), 5,
+        #          np.array([41, 41, 24, 39, 39]), [2])
+        g = grid(np.array([-15.0, -10.0, -math.pi, -1, -1]), np.array([15.0, 10.0, math.pi, 18, 18]), 5,
+                 np.array([61, 41, 24, 39, 39]), [2])
 
-        # TODO 0909
-        ctrl_beta_0 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0910/mode-1/reldyn5d_ctrl_beta_mode-1_t_3.00.npy")
-        ctrl_acc_0 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0910/mode-1/reldyn5d_ctrl_acc_mode-1_t_3.00.npy")
+        # # TODO 0909
+        # ctrl_beta_0 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0910/mode-1/reldyn5d_ctrl_beta_mode-1_t_3.00.npy")
+        # ctrl_acc_0 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0910/mode-1/reldyn5d_ctrl_acc_mode-1_t_3.00.npy")
 
         # Set time
         time = 3.0
@@ -32,7 +34,7 @@ class PlotReldyn5D(object):
         # v_h = 6.0
         # v_r = 0.0
 
-        psi = - 143
+        psi = 37
         v_h = 6.0
         v_r = 2.0
 
@@ -47,14 +49,13 @@ class PlotReldyn5D(object):
         # V_6 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0910/mode-1/reldyn5d_brs_mode-1_t_{:.2f}.npy".format(time))
 
         V_0 = np.load(
-            "/home/anjianl/Desktop/project/optimized_dp/data/brs/0929-correct/mode0/reldyn5d_brs_mode0_t_{:.2f}.npy".format(time))
-        V_1 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0929-correct/mode1/reldyn5d_brs_mode1_t_{:.2f}.npy".format(time))
-        V_2 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0929-correct/mode2/reldyn5d_brs_mode2_t_{:.2f}.npy".format(time))
-        V_3 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0929-correct/mode3/reldyn5d_brs_mode3_t_{:.2f}.npy".format(time))
-        V_4 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0929-correct/mode4/reldyn5d_brs_mode4_t_{:.2f}.npy".format(time))
-        V_5 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0929-correct/mode5/reldyn5d_brs_mode5_t_{:.2f}.npy".format(time))
-        V_6 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0929-correct/mode-1/reldyn5d_brs_mode-1_t_{:.2f}.npy".format(time))
-        # V_6 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0929/mode-1/reldyn5d_brs_mode-1_t_0.00.npy")
+            "/home/anjianl/Desktop/project/optimized_dp/data/brs/1004/mode0/reldyn5d_brs_mode0_t_3.00.npy")
+        V_1 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/1004/mode1/reldyn5d_brs_mode1_t_3.00.npy")
+        V_2 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/1004/mode2/reldyn5d_brs_mode2_t_3.00.npy")
+        V_3 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/1004/mode3/reldyn5d_brs_mode3_t_3.00.npy")
+        V_4 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/1004/mode4/reldyn5d_brs_mode4_t_3.00.npy")
+        V_5 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/1004/mode5/reldyn5d_brs_mode5_t_3.00.npy")
+        V_6 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/1004/mode-1/reldyn5d_brs_mode-1_t_3.00.npy")
 
         x_grid, y_grid = self.get_xy_grid(g, [0, 1])
 
@@ -74,8 +75,8 @@ class PlotReldyn5D(object):
         val_5 = np.squeeze(V_5[:, :, psi_index, v_h_index, v_r_index])
         val_6 = np.squeeze(V_6[:, :, psi_index, v_h_index, v_r_index])
 
-        ctrl_beta_val_0 = np.squeeze(ctrl_beta_0[:, :, psi_index, v_h_index, v_r_index])
-        ctrl_acc_val_0 = np.squeeze(ctrl_acc_0[:, :, psi_index, v_h_index, v_r_index])
+        # ctrl_beta_val_0 = np.squeeze(ctrl_beta_0[:, :, psi_index, v_h_index, v_r_index])
+        # ctrl_acc_val_0 = np.squeeze(ctrl_acc_0[:, :, psi_index, v_h_index, v_r_index])
 
         fig, ax = plt.subplots()
 
@@ -97,8 +98,8 @@ class PlotReldyn5D(object):
         # lines = [CS_1.collections[0], CS_2.collections[0], CS_3.collections[0], CS_4.collections[0]]
         # labels = ['Mode 1: stable', 'Mode 2: acceleration', 'Mode 3: left turn', 'Mode 4: right turn']
 
-        # lines = [CS_3.collections[0], CS_4.collections[0]]
-        # labels = ['Mode 3: left turn', 'Mode 4: right turn']
+        # lines = [CS_5.collections[0], CS_6.collections[0]]
+        # labels = ['test1', "test2"]
 
         lines = [CS_0.collections[0], CS_1.collections[0], CS_2.collections[0], CS_3.collections[0], CS_4.collections[0], CS_5.collections[0], CS_6.collections[0]]
         labels = ['Mode 0: decelerate', 'Mode 1: stable', 'Mode2: acceleration', 'Mode 3: left turn', 'Mode 4: right turn', 'Mode 5: in roundabout', "Mode -1, full range"]

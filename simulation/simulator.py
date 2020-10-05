@@ -83,8 +83,8 @@ class Simulator(object):
         self.use_safe_control = True
         # self.use_safe_control = False
 
-        # self.use_prediction = True
-        self.use_prediction = False
+        self.use_prediction = True
+        # self.use_prediction = False
 
         self.save_plot = False
         # self.save_plot = True
@@ -184,6 +184,13 @@ class Simulator(object):
             min_deviation = max(curr_min_deviation, min_deviation)
             print("minimum deviation is ", min_deviation)
 
+            # Human car
+            human_car.update(curr_step=curr_step_human)
+            x_h_list.append(human_car.x_h)
+            y_h_list.append(human_car.y_h)
+
+            #######################################
+            # Update robot car
             if self.use_safe_control is True:
                 # Check if reachability safe controller should be used
                 if min(val_func_bicycle4d, val_func_reldyn5d) < 0:
@@ -221,10 +228,10 @@ class Simulator(object):
             x_r_list.append(robot_car.x)
             y_r_list.append(robot_car.y)
 
-            # Human car
-            human_car.update(curr_step=curr_step_human)
-            x_h_list.append(human_car.x_h)
-            y_h_list.append(human_car.y_h)
+            # # Human car
+            # human_car.update(curr_step=curr_step_human)
+            # x_h_list.append(human_car.x_h)
+            # y_h_list.append(human_car.y_h)
 
             if '/Users/anjianli/anaconda3/envs/hcl-env/lib/python3.8' in sys.path:
                 intersection_curbs = np.load(

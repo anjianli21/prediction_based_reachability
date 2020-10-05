@@ -37,6 +37,13 @@ def CylinderShape(grid, ignore_dims, center, radius):
     data = np.sqrt(data) - radius
     return data
 
+def RectangleXY(grid, x_radius, y_radius):
+    data = np.maximum(grid.vs[0] - x_radius, - grid.vs[0] - x_radius)
+    data = np.maximum(data, grid.vs[1] - y_radius)
+    data = np.maximum(data, - grid.vs[1] - y_radius)
+
+    return data
+
 # Range is a list of list of ranges
 # def Rectangle4D(grid, range):
 #     data = np.zeros(grid.pts_each_dim)
