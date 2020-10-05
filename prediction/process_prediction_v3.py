@@ -47,6 +47,7 @@ class ProcessPredictionV3(object):
         # self.mode_time_span = 5
         self.mode_time_span = 10
         # self.mode_time_span = 15
+        # self.mode_time_span = 20
 
         # Action bound, used for filtering
         self.acc_bound = [-5, 3]

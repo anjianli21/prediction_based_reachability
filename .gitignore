@@ -4,3 +4,5 @@
 *.npy
 /result
 /data/brs
+/data/intersection-data-psi
+/data/roundabout-data-psi

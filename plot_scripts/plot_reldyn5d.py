@@ -32,7 +32,7 @@ class PlotReldyn5D(object):
         # v_h = 6.0
         # v_r = 0.0
 
-        psi = - 179
+        psi = - 143
         v_h = 6.0
         v_r = 2.0
 

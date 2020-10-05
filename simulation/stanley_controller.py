@@ -96,7 +96,7 @@ def stanley_control(state, cx, cy, cyaw, last_target_idx):
     :param last_target_idx: (int)
     :return: (float, int)
     """
-    current_target_idx, error_front_axle = calc_target_index(state, cx, cy)
+    current_target_idx, error_front_axle, min_d = calc_target_index(state, cx, cy)
 
     if last_target_idx >= current_target_idx:
         current_target_idx = last_target_idx
@@ -108,7 +108,7 @@ def stanley_control(state, cx, cy, cyaw, last_target_idx):
     # Steering control
     delta = theta_e + theta_d
 
-    return delta, current_target_idx
+    return delta, current_target_idx, min_d
 
 
 def normalize_angle(angle):
@@ -142,6 +142,7 @@ def calc_target_index(state, cx, cy):
     dx = [fx - icx for icx in cx]
     dy = [fy - icy for icy in cy]
     d = np.hypot(dx, dy)
+
     target_idx = np.argmin(d)
 
     # Project RMS error onto front axle vector
@@ -149,7 +150,7 @@ def calc_target_index(state, cx, cy):
                       -np.sin(state.yaw + np.pi / 2)]
     error_front_axle = np.dot([dx[target_idx], dy[target_idx]], front_axle_vec)
 
-    return target_idx, error_front_axle
+    return target_idx, error_front_axle, min(d)
 
 
 def main():

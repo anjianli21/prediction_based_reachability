@@ -22,10 +22,13 @@ class HumanState(object):
         """
         Because we directly use the
         """
-        next_step = curr_step + 1
 
-        dx = (self.ref_path['x_t'][next_step + 1] - self.ref_path['x_t'][next_step]) / 0.1
-        dy = (self.ref_path['y_t'][next_step + 1] - self.ref_path['y_t'][next_step]) / 0.1
-        self.x_h, self.y_h = self.ref_path['x_t'][next_step], self.ref_path['y_t'][next_step]
-        self.v_h = np.sqrt(dx ** 2 + dy ** 2)
-        self.psi_h = np.arctan2(dy, dx)
+        curr_step += 1
+
+        # dx = (self.ref_path['x_t'][next_step + 1] - self.ref_path['x_t'][next_step]) / 0.1
+        # dy = (self.ref_path['y_t'][next_step + 1] - self.ref_path['y_t'][next_step]) / 0.1
+        # self.x_h, self.y_h = self.ref_path['x_t'][next_step], self.ref_path['y_t'][next_step]
+        # self.v_h = np.sqrt(dx ** 2 + dy ** 2)
+        # self.psi_h = np.arctan2(dy, dx)
+
+        self.x_h, self.y_h, self.psi_h, self.v_h = self.ref_path['x_t'][curr_step], self.ref_path['y_t'][curr_step], self.ref_path['psi_t'][curr_step], self.ref_path['v_t'][curr_step]
