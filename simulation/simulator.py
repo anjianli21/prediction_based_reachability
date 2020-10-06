@@ -51,31 +51,41 @@ class Simulator(object):
             self.file_dir_intersection = '/Users/anjianli/Desktop/robotics/project/optimized_dp/data/intersection-data-psi'
             self.file_dir_roundabout = '/Users/anjianli/Desktop/robotics/project/optimized_dp/data/roundabout-data'
 
+        # Trial 2
         self.huamn_car_file_name_intersection = 'car_20_vid_09.csv'
         self.robot_car_file_name_intersection = 'car_36_vid_11_refPath.csv'
-        # Trial 1
-        # self.human_start_step = 180
-        # self.robot_target_speed = 8
-        # self.robot_start_step = 0
-        # # Trial 2
-        # self.human_start_step = 230
+        # self.human_start_step = 200
         # self.robot_target_speed = 2
-        # self.robot_start_step = 82
+        # self.robot_start_step = 60
         # # Trial 3
-        # self.human_start_step = 220
-        # self.robot_target_speed = 2
-        # self.robot_start_step = 80
-
-        self.huamn_car_file_name_intersection = 'car_36_vid_11.csv'
-        self.robot_car_file_name_intersection = 'car_20_vid_09_refPath.csv'
-        # Trial 4 TODO: Good show of our predicion works!
-        self.human_start_step = 164
+        self.human_start_step = 220
         self.robot_target_speed = 2
-        self.robot_start_step = 66
+        self.robot_start_step = 70
+
+        # # Trial 4 TODO: Good show of our predicion works!
+        # self.huamn_car_file_name_intersection = 'car_36_vid_11.csv'
+        # self.robot_car_file_name_intersection = 'car_20_vid_09_refPath.csv'
+        # self.human_start_step = 164
+        # self.robot_target_speed = 2
+        # self.robot_start_step = 66
+
+        # # Trial 5 TODO: fair examples
+        # self.human_start_step = 164
+        # self.robot_target_speed = 2
+        # self.robot_start_step = 62
+
+        # Trial 6 TODO: very good examples to show our prediction works
+        # self.huamn_car_file_name_intersection = 'car_36_vid_11.csv'
+        # self.robot_car_file_name_intersection = 'car_52_vid_07_refPath.csv'
+        # self.human_start_step = 170
+        # self.robot_target_speed = 2
+        # self.robot_start_step = 40
 
         # self.poly_num = 30
         self.episode_len = 12
         # self.episode_len = 22
+
+        self.mode_predict_span = 1
 
         self.show_animation = True
         # self.show_animation = False
@@ -83,8 +93,8 @@ class Simulator(object):
         self.use_safe_control = True
         # self.use_safe_control = False
 
-        self.use_prediction = True
-        # self.use_prediction = False
+        # self.use_prediction = True
+        self.use_prediction = False
 
         self.save_plot = False
         # self.save_plot = True
@@ -137,16 +147,19 @@ class Simulator(object):
         # Main loop
         curr_t = 0
         curr_step_human = human_start_step
+        curr_step = 0
         min_dist = 100
         min_deviation = 0
         while curr_t < tMax and last_idx > target_idx and curr_step_human < len(human_car_traj['x_t']) - 2:
 
-            try:
-                # Get predicted trajectory of human car
-                mode_num, mode_name, mode_probability = self.get_human_car_prediction(human_car_traj, curr_step_human)
-            except IndexError:
-                print("human car trajectory is finished")
-                break
+            if int(curr_step) % self.mode_predict_span == 0:
+                try:
+                    # Get predicted trajectory of human car
+                    print("current time is", curr_t, "another prediction is used.")
+                    mode_num, mode_name, mode_probability = self.get_human_car_prediction(human_car_traj, curr_step_human)
+                except IndexError:
+                    print("human car trajectory is finished")
+                    break
 
             # print("human orientation is", human_car.psi_h)
             # print("robot orientation is", robot_car.yaw)
@@ -224,6 +237,7 @@ class Simulator(object):
 
             curr_t += dt
             curr_step_human += 1
+            curr_step += 1
 
             x_r_list.append(robot_car.x)
             y_r_list.append(robot_car.y)

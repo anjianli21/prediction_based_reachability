@@ -18,13 +18,22 @@ except:
 
 from simulation.simulator import Simulator
 
+# Default design
+# k = 0.5  # control gain
+# Kp = 1.0  # speed proportional gain
+# dt = 0.1  # [s] time difference
+# L = 2.9  # [m] Wheel base of vehicle
+# max_steer = np.radians(30.0)  # [rad] max steering angle
+# min_v = 0.0
 
+# Self design
 k = 0.5  # control gain
 Kp = 1.0  # speed proportional gain
 dt = 0.1  # [s] time difference
-L = 2.9  # [m] Wheel base of vehicle
+L = 2.788  # [m] Wheel base of vehicle
 max_steer = np.radians(30.0)  # [rad] max steering angle
 min_v = 0.0
+
 
 show_animation = True
 

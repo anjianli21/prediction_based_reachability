@@ -48,17 +48,21 @@ class OptimalControlRelDyn5D(object):
         # Data path
         if '/Users/anjianli/anaconda3/envs/hcl-env/lib/python3.8' not in sys.path:
             # TODO: use latest brs 0929-correct
-            self.data_path = "/home/anjianl/Desktop/project/optimized_dp/data/brs/0929-correct/"
+            # self.data_path = "/home/anjianl/Desktop/project/optimized_dp/data/brs/0929-correct/"
+            # TODO; new target 1004-correct
+            self.data_path = "/home/anjianl/Desktop/project/optimized_dp/data/brs/1004-correct/"
         else:
             self.data_path = "/Users/anjianli/Desktop/robotics/project/optimized_dp/data/brs/0929-correct/"
 
         # Computational bound for valfunc and optctrl
         # (x_rel, y_rel, psi_rel, v_h, v_r)
-        self.x_rel_bound = [-10, 10]
+        self.x_rel_bound = [-15, 15]
         self.y_rel_bound = [-10, 10]
         self.psi_rel_bound = [-math.pi, math.pi]
         self.v_h_bound = [-1, 18] # New brs considers speed obstacles
         self.v_r_bound = [-1, 18] # New brs considers speed obstacles
+        self.x_rel_dim = int(self.x_rel_bound[1] * 4 + 1)
+        self.y_rel_dim = int(self.y_rel_bound[1] * 4 + 1)
 
     def get_optctrl(self):
 
@@ -157,8 +161,8 @@ class OptimalControlRelDyn5D(object):
 
     def interpolate(self, data, point):
 
-        x_rel = np.linspace(-10, 10, num=41)
-        y_rel = np.linspace(-10, 10, num=41)
+        x_rel = np.linspace(self.x_rel_bound[0], self.x_rel_bound[1], num=self.x_rel_dim)
+        y_rel = np.linspace(self.y_rel_bound[0], self.y_rel_bound[1], num=self.y_rel_dim)
         psi_rel = np.linspace(-math.pi, math.pi, num=25)
         v_h = np.linspace(-1, 18, num=39)
         v_r = np.linspace(-1, 18, num=39)
@@ -190,7 +194,7 @@ class OptimalControlRelDyn5D(object):
         # plt.plot(contour_set[:, 0], contour_set[:, 1])
         # plt.show()
 
-        contour_rel_coordinate = np.asarray([contour_set[:, 0] * 0.5 - 10, contour_set[:, 1] * 0.5 - 10])
+        contour_rel_coordinate = np.asarray([contour_set[:, 0] * 0.5 + self.x_rel_bound[0], contour_set[:, 1] * 0.5 + self.y_rel_bound[0]])
 
         return contour_rel_coordinate
 

@@ -30,14 +30,16 @@ class OptimalControlBicycle4D(object):
         # Data path
         if self.scenario == "intersection":
             if '/Users/anjianli/anaconda3/envs/hcl-env/lib/python3.8' not in sys.path:
-                # TODO: use latest brs 0929-correct
-                self.data_path = "/home/anjianl/Desktop/project/optimized_dp/data/brs/0929-correct/obstacle/intersection/"
+                # self.data_path = "/home/anjianl/Desktop/project/optimized_dp/data/brs/0929-correct/obstacle/intersection/"
+                # TODO: add buffer area 1.5m
+                self.data_path = "/home/anjianl/Desktop/project/optimized_dp/data/brs/1005-correct/obstacle_buffer_1d5/intersection/"
             else:
                 self.data_path = "/Users/anjianli/Desktop/robotics/project/optimized_dp/data/brs/0929-correct/obstacle/intersection/"
         elif self.scenario == "roundabout":
             if '/Users/anjianli/anaconda3/envs/hcl-env/lib/python3.8' not in sys.path:
-                # TODO: use latest brs 0929-correct
-                self.data_path = "/home/anjianl/Desktop/project/optimized_dp/data/brs/0929-correct/obstacle/roundabout/"
+                # self.data_path = "/home/anjianl/Desktop/project/optimized_dp/data/brs/0929-correct/obstacle/roundabout/"
+                # TODO: add buffer area 1.5m
+                self.data_path = "/home/anjianl/Desktop/project/optimized_dp/data/brs/1005-correct/obstacle_buffer_1d5/roundabout/"
             else:
                 self.data_path = "/Users/anjianli/Desktop/robotics/project/optimized_dp/data/brs/0929-correct/obstacle/roundabout/"
 

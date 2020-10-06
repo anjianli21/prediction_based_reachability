@@ -67,22 +67,50 @@ class Simulator2(object):
         # self.robot_start_step = 80
 
         # # Trial 3 TODO: use prediction resulting in smaller deviation
-        self.huamn_car_file_name_roundabout = 'car_24.csv'
-        self.robot_car_file_name_roundabout = 'car_6_refPath.csv'
-        self.human_start_step = 31
-        self.robot_target_speed = 2
-        self.robot_start_step = 45
+        # self.huamn_car_file_name_roundabout = 'car_24.csv'
+        # self.robot_car_file_name_roundabout = 'car_6_refPath.csv'
+        # self.human_start_step = 31
+        # self.robot_target_speed = 2
+        # self.robot_start_step = 45
 
         # Trial 4 TODO: use prediction resulting in smaller deviation
         # self.huamn_car_file_name_roundabout = 'car_6.csv'
         # self.robot_car_file_name_roundabout = 'car_9_refPath.csv'
-        # self.human_start_step = 35
+        # # self.human_start_step = 35
+        # # self.robot_target_speed = 2
+        # # self.robot_start_step = 10
+        # # #
+        # # # # Trial 5
+        # self.human_start_step = 20
         # self.robot_target_speed = 2
-        # self.robot_start_step = 10
+        # self.robot_start_step = 12
+
+        # Trial 6 TODO: new target: intereseting case, safe controller mainly push to accelerate, not turning
+        # self.huamn_car_file_name_roundabout = 'car_29.csv'
+        # self.robot_car_file_name_roundabout = 'car_30_refPath.csv'
+        # self.human_start_step = 0
+        # self.robot_target_speed = 2
+        # self.robot_start_step = 61
+
+        # Trial 7 TODO: new target: bad examples
+        # self.huamn_car_file_name_roundabout = 'car_35.csv'
+        # self.robot_car_file_name_roundabout = 'car_29_refPath.csv'
+        # self.human_start_step = 20
+        # self.robot_target_speed = 2
+        # self.robot_start_step = 60
+
+        # Trial 8 TODO: very good example, with prediction almost no safe controller
+        self.huamn_car_file_name_roundabout = 'car_41.csv'
+        self.robot_car_file_name_roundabout = 'car_36_refPath.csv'
+        self.human_start_step = 30
+        self.robot_target_speed = 2
+        self.robot_start_step = 48
 
         # self.poly_num = 30
         # self.episode_len = 12
         self.episode_len = 22
+
+        self.mode_predict_span = 1
 
         self.show_animation = True
         # self.show_animation = False
@@ -148,16 +176,19 @@ class Simulator2(object):
         # Main loop
         curr_t = 0
         curr_step_human = human_start_step
+        curr_step = 0
         min_dist = 100
         min_deviation = 0
         while curr_t < tMax and last_idx > target_idx and curr_step_human < len(human_car_traj['x_t']) - 2:
 
-            try:
-                # Get predicted trajectory of human car
-                mode_num, mode_name, mode_probability = self.get_human_car_prediction(human_car_traj, curr_step_human)
-            except IndexError:
-                print("human car trajectory is finished")
-                break
+            if int(curr_step) % self.mode_predict_span == 0:
+                try:
+                    # Get predicted trajectory of human car
+                    print("current time is", curr_t, "another prediction is used.")
+                    mode_num, mode_name, mode_probability = self.get_human_car_prediction(human_car_traj, curr_step_human)
+                except IndexError:
+                    print("human car trajectory is finished")
+                    break
 
             ## TODO: In RelDyn5D, get reachability value function and optimal control for robot car
             rel_states, val_func_reldyn5d, optctrl_beta_r_reldyn5d, optctrl_a_r_reldyn5d, contour_rel_coordinate\
@@ -205,7 +236,7 @@ class Simulator2(object):
                 if min(val_func_bicycle4d, val_func_reldyn5d) < 0:
                     if val_func_reldyn5d <= val_func_bicycle4d:
                         print("RelDyn5D safe controller in effect!")
-                        print("optimal control beta is", optctrl_beta_r_reldyn5d, " acceleration is", optctrl_a_r_reldyn5d)
+                        # print("optimal control beta is", optctrl_beta_r_reldyn5d, " acceleration is", optctrl_a_r_reldyn5d)
                         # time.sleep(3)
 
                         # TODO: don't use reachability controller, use deceleration
@@ -215,7 +246,7 @@ class Simulator2(object):
 
                     else:
                         print("Bicycle4D safe controller in effect!")
-                        print("optimal control beta is", optctrl_beta_r_bicycle4d, " acceleration is", optctrl_a_r_bicycle4d)
+                        # print("optimal control beta is", optctrl_beta_r_bicycle4d, " acceleration is", optctrl_a_r_bicycle4d)
                         robot_car.safe_update(optctrl_beta_r_bicycle4d, optctrl_a_r_bicycle4d)
                 else:
                     # If inside, reachable set, use optimal control to integrate the states
@@ -232,6 +263,7 @@ class Simulator2(object):
 
             curr_t += dt
             curr_step_human += 1
+            curr_step += 1
 
             x_r_list.append(robot_car.x)
             y_r_list.append(robot_car.y)

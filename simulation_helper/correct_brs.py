@@ -1,11 +1,16 @@
 import numpy as np
+import os
 
 # # For relative system 5D
 # for i in range(-1, 6, 1):
 #     print(i)
 #
-#     file_dir = "/home/anjianl/Desktop/project/optimized_dp/data/brs/0929/"
-#     file_dir_new = "/home/anjianl/Desktop/project/optimized_dp/data/brs/0929-correct/"
+#     file_dir = "/home/anjianl/Desktop/project/optimized_dp/data/brs/1004/"
+#     file_dir_new = "/home/anjianl/Desktop/project/optimized_dp/data/brs/1004-correct/"
+#
+#     file_dir_mode = '/home/anjianl/Desktop/project/optimized_dp/data/brs/1004-correct//mode{:d}'.format(i)
+#     if not os.path.exists(file_dir_mode):
+#         os.mkdir(file_dir_mode)
 #
 #     mode_0_brs = np.load(file_dir + "mode{:d}/reldyn5d_brs_mode{:d}_t_3.00.npy".format(i, i))
 #
@@ -27,9 +32,9 @@ import numpy as np
 
 ##########################################################################################################################
 # For 4D bicycle obstacles.
-# intersection
-# file_dir = "/home/anjianl/Desktop/project/optimized_dp/data/brs/0929/obstacle/intersection/"
-# file_dir_new = "/home/anjianl/Desktop/project/optimized_dp/data/brs/0929-correct/obstacle/intersection/"
+# # intersection
+# file_dir = "/home/anjianl/Desktop/project/optimized_dp/data/brs/1005/obstacle_buffer_1d5/intersection/"
+# file_dir_new = "/home/anjianl/Desktop/project/optimized_dp/data/brs/1005-correct/obstacle_buffer_1d5/intersection/"
 #
 # # brs
 # intersection_brs = np.load(file_dir + "bicycle4d_brs_intersection_t_3.00.npy")
@@ -47,8 +52,8 @@ import numpy as np
 # np.save(file_dir_new + "bicycle4d_intersection_ctrl_beta_t_3.00.npy", intersection_ctrl_beta_correct)
 
 # roundabout
-file_dir = "/home/anjianl/Desktop/project/optimized_dp/data/brs/0929/obstacle/roundabout/"
-file_dir_new = "/home/anjianl/Desktop/project/optimized_dp/data/brs/0929-correct/obstacle/roundabout/"
+file_dir = "/home/anjianl/Desktop/project/optimized_dp/data/brs/1005/obstacle_buffer_1d5/roundabout/"
+file_dir_new = "/home/anjianl/Desktop/project/optimized_dp/data/brs/1005-correct/obstacle_buffer_1d5/roundabout/"
 
 # brs
 roundabout_brs = np.load(file_dir + "bicycle4d_brs_roundabout_t_3.00.npy")
