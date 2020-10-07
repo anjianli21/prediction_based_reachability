@@ -11,6 +11,8 @@ import scipy.io
 from scipy import integrate
 import time
 
+import os
+
 from simulation.optimal_control_reldyn5d import OptimalControlRelDyn5D
 from prediction.process_prediction_v3 import ProcessPredictionV3
 from prediction.predict_mode_v3 import PredictModeV3
@@ -93,22 +95,22 @@ class Simulator2(object):
         # self.robot_start_step = 61
 
         # Trial 7 TODO: new target: bad examples
-        # self.huamn_car_file_name_roundabout = 'car_35.csv'
-        # self.robot_car_file_name_roundabout = 'car_29_refPath.csv'
-        # self.human_start_step = 20
-        # self.robot_target_speed = 2
-        # self.robot_start_step = 60
+        self.huamn_car_file_name_roundabout = 'car_35.csv'
+        self.robot_car_file_name_roundabout = 'car_29_refPath.csv'
+        self.human_start_step = 20
+        self.robot_target_speed = 2
+        self.robot_start_step = 60
 
         # Trial 8 TODO: very good example, with prediction almost no safe controller
-        self.huamn_car_file_name_roundabout = 'car_41.csv'
-        self.robot_car_file_name_roundabout = 'car_36_refPath.csv'
-        self.human_start_step = 30
-        self.robot_target_speed = 2
-        self.robot_start_step = 48
+        # self.huamn_car_file_name_roundabout = 'car_41.csv'
+        # self.robot_car_file_name_roundabout = 'car_36_refPath.csv'
+        # self.human_start_step = 30
+        # self.robot_target_speed = 2
+        # self.robot_start_step = 48
 
         # self.poly_num = 30
-        # self.episode_len = 12
-        self.episode_len = 22
+        self.episode_len = 12
+        # self.episode_len = 22
 
         self.mode_predict_span = 1
 
@@ -121,8 +123,10 @@ class Simulator2(object):
         # self.use_prediction = True
         self.use_prediction = False
 
-        # self.save_plot = True
-        self.save_plot = False
+        self.save_plot = True
+        # self.save_plot = False
+
+        self.fig_save_dir = "/home/anjianl/Desktop/project/optimized_dp/result/simulation/1006/roundabout/3/nopred/"
 
     def simulate(self):
 
@@ -310,7 +314,9 @@ class Simulator2(object):
                     if '/Users/anjianli/anaconda3/envs/hcl-env/lib/python3.8' in sys.path:
                         plt.savefig("/Users/anjianli/Desktop/robotics/project/optimized_dp/result/simulation/1002/roundabout/2_np/t_{:.2f}_pred.png".format(curr_t))
                     else:
-                        plt.savefig("/home/anjianl/Desktop/project/optimized_dp/result/simulation/1002/roundabout/2/t_{:.2f}_nopred.png".format(curr_t))
+                        if not os.path.exists(self.fig_save_dir):
+                            os.mkdir(self.fig_save_dir)
+                        plt.savefig(self.fig_save_dir + "t_{:.2f}.png".format(curr_t))
 
         print("minimum distance is ", min_dist)
         print("total time used is ", curr_t)

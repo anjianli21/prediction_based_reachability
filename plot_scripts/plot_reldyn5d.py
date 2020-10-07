@@ -34,7 +34,7 @@ class PlotReldyn5D(object):
         # v_h = 6.0
         # v_r = 0.0
 
-        psi = 37
+        psi = 0
         v_h = 6.0
         v_r = 2.0
 
@@ -49,13 +49,13 @@ class PlotReldyn5D(object):
         # V_6 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0910/mode-1/reldyn5d_brs_mode-1_t_{:.2f}.npy".format(time))
 
         V_0 = np.load(
-            "/home/anjianl/Desktop/project/optimized_dp/data/brs/1004/mode0/reldyn5d_brs_mode0_t_3.00.npy")
+            "/home/anjianl/Desktop/project/optimized_dp/data/brs/1004/mode-1/reldyn5d_brs_mode-1_t_3.00.npy")
         V_1 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/1004/mode1/reldyn5d_brs_mode1_t_3.00.npy")
         V_2 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/1004/mode2/reldyn5d_brs_mode2_t_3.00.npy")
         V_3 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/1004/mode3/reldyn5d_brs_mode3_t_3.00.npy")
         V_4 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/1004/mode4/reldyn5d_brs_mode4_t_3.00.npy")
         V_5 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/1004/mode5/reldyn5d_brs_mode5_t_3.00.npy")
-        V_6 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/1004/mode-1/reldyn5d_brs_mode-1_t_3.00.npy")
+        V_6 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/1006/mode-1/reldyn5d_brs_mode-1_t_0.00.npy")
 
         x_grid, y_grid = self.get_xy_grid(g, [0, 1])
 

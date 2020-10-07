@@ -49,8 +49,10 @@ class OptimalControlRelDyn5D(object):
         if '/Users/anjianli/anaconda3/envs/hcl-env/lib/python3.8' not in sys.path:
             # TODO: use latest brs 0929-correct
             # self.data_path = "/home/anjianl/Desktop/project/optimized_dp/data/brs/0929-correct/"
-            # TODO; new target 1004-correct
+            # TODO; new target 1004-correct 4x3 radius
             self.data_path = "/home/anjianl/Desktop/project/optimized_dp/data/brs/1004-correct/"
+            # TODO: smaller new target 3.5x1.5 radius
+            # self.data_path = "/home/anjianl/Desktop/project/optimized_dp/data/brs/1006-correct/"
         else:
             self.data_path = "/Users/anjianli/Desktop/robotics/project/optimized_dp/data/brs/0929-correct/"
 

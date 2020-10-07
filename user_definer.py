@@ -45,7 +45,9 @@ import math
 # # TODO: previously, the radius is 2
 # # Initial_value_f = CylinderShape(g, [3, 4, 5], np.zeros(5), 2)
 # # TODO: Currently, we try a rectangle, with x has radius of 4, y has radius of 3
-# Initial_value_f = RectangleXY(g, x_radius=4, y_radius=3)
+# # Initial_value_f = RectangleXY(g, x_radius=4, y_radius=3)
+# # TODO 4x3 might be too big, we use 3.5 x 1.5
+# Initial_value_f = RectangleXY(g, x_radius=3.5, y_radius=1.5)
 # Initial_value_f = np.minimum(Initial_value_f, HalfPlane(g, 0, 4))
 # Initial_value_f = np.minimum(Initial_value_f, - HalfPlane(g, 17, 4))
 #
@@ -83,7 +85,9 @@ import math
 # # Use the grid to initialize initial value function
 # # Initial_value_f = np.load("/home/anjianl/Desktop/project/optimized_dp/data/map/value_function/intersection_valfunc_correct.npy") # Load the fmm map-based value function of the obstacle
 # # Use value function with buffer = 1.5m
-# Initial_value_f = np.load("/home/anjianl/Desktop/project/optimized_dp/data/map/value_function/intersection_valfunc_correct_buffer_1.5.npy")
+# # Initial_value_f = np.load("/home/anjianl/Desktop/project/optimized_dp/data/map/value_function/intersection_valfunc_correct_buffer_1.5.npy")
+# # Use value function with buffer = 1m
+# Initial_value_f = np.load("/home/anjianl/Desktop/project/optimized_dp/data/map/value_function/intersection_valfunc_correct_buffer_1m.npy")
 # # Add speed target
 # Initial_value_f = np.minimum(Initial_value_f, HalfPlane(g, 0, 3))
 # Initial_value_f = np.minimum(Initial_value_f, - HalfPlane(g, 17, 3))
@@ -120,13 +124,15 @@ print("Computing bicycle dynamics 4D roundabout")
 # Use the grid to initialize initial value function
 # Initial_value_f = np.load("/home/anjianl/Desktop/project/optimized_dp/data/map/value_function/roundabout_valfunc_correct.npy") # Load the fmm map-based value function of the obstacle
 # Use value function with buffer = 1.5m
-Initial_value_f = np.load("/home/anjianl/Desktop/project/optimized_dp/data/map/value_function/roundabout_valfunc_correct_buffer_1.5.npy")
+# Initial_value_f = np.load("/home/anjianl/Desktop/project/optimized_dp/data/map/value_function/roundabout_valfunc_correct_buffer_1.5.npy")
+# Use buffer = 1m
+Initial_value_f = np.load("/home/anjianl/Desktop/project/optimized_dp/data/map/value_function/roundabout_valfunc_correct_buffer_1m.npy")
 # Add speed target
 Initial_value_f = np.minimum(Initial_value_f, HalfPlane(g, 0, 3))
 Initial_value_f = np.minimum(Initial_value_f, - HalfPlane(g, 17, 3))
 
 # Look-back length and time step
-lookback_length = 4.1
+lookback_length = 3.1
 t_step = 0.05
 
 small_number = 1e-5

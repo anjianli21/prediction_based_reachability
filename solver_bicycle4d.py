@@ -114,13 +114,13 @@ def main():
              print("tNow is ", tNow)
 
              # Saving reachable set and control data into disk
-             if tNow == 0.00482916459441185 or tNow == 1 or tNow == 2 or tNow == 3:
+             if tNow == 0.00482916459441185 or tNow == 3:
                 print("Max diff. from previous time step: {}".format(np.max(np.abs(V_1.asnumpy() - V1_old))))
                 print("Avg diff. from previous time step: {}".format(np.mean(np.abs(V_1.asnumpy() - V1_old))))
 
                 # TODO: change scenario here
                 # # Intersection ###############################################################################
-                # file_dir = '/home/anjianl/Desktop/project/optimized_dp/data/brs/1005/obstacle_buffer_1d5/intersection'
+                # file_dir = '/home/anjianl/Desktop/project/optimized_dp/data/brs/1006/obstacle_buffer_1m/intersection'
                 # if not os.path.exists(file_dir):
                 #     os.mkdir(file_dir)
                 # file_brs_path = file_dir + '/bicycle4d_brs_intersection' + '_t_%.2f.npy'
@@ -136,7 +136,7 @@ def main():
                 # print("intersection control acc is saved!")
 
                 # # Roundabout ##################################################################################
-                file_dir = '/home/anjianl/Desktop/project/optimized_dp/data/brs/1005/obstacle_buffer_1d5/roundabout'
+                file_dir = '/home/anjianl/Desktop/project/optimized_dp/data/brs/1006/obstacle_buffer_1m/roundabout'
                 if not os.path.exists(file_dir):
                     os.mkdir(file_dir)
                 file_brs_path = file_dir + '/bicycle4d_brs_roundabout' + '_t_%.2f.npy'

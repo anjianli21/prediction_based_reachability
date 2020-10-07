@@ -11,6 +11,8 @@ import scipy.io
 from scipy import integrate
 import time
 
+import os
+
 from simulation.optimal_control_reldyn5d import OptimalControlRelDyn5D
 from prediction.process_prediction_v3 import ProcessPredictionV3
 from prediction.predict_mode_v3 import PredictModeV3
@@ -52,34 +54,34 @@ class Simulator(object):
             self.file_dir_roundabout = '/Users/anjianli/Desktop/robotics/project/optimized_dp/data/roundabout-data'
 
         # Trial 2
-        self.huamn_car_file_name_intersection = 'car_20_vid_09.csv'
-        self.robot_car_file_name_intersection = 'car_36_vid_11_refPath.csv'
-        # self.human_start_step = 200
+        # self.huamn_car_file_name_intersection = 'car_20_vid_09.csv'
+        # self.robot_car_file_name_intersection = 'car_36_vid_11_refPath.csv'
+        # # self.human_start_step = 200
+        # # self.robot_target_speed = 2
+        # # self.robot_start_step = 60
+        # # # Trial 3
+        # self.human_start_step = 220
         # self.robot_target_speed = 2
-        # self.robot_start_step = 60
-        # # Trial 3
-        self.human_start_step = 220
-        self.robot_target_speed = 2
-        self.robot_start_step = 70
+        # self.robot_start_step = 70
 
         # # Trial 4 TODO: Good show of our predicion works!
         # self.huamn_car_file_name_intersection = 'car_36_vid_11.csv'
         # self.robot_car_file_name_intersection = 'car_20_vid_09_refPath.csv'
-        # self.human_start_step = 164
-        # self.robot_target_speed = 2
-        # self.robot_start_step = 66
-
-        # # Trial 5 TODO: fair examples
+        # # self.human_start_step = 164
+        # # self.robot_target_speed = 2
+        # # self.robot_start_step = 66
+        #
+        # # # Trial 5 TODO: fair examples
         # self.human_start_step = 164
         # self.robot_target_speed = 2
         # self.robot_start_step = 62
 
         # Trial 6 TODO: very good examples to show our prediction works
-        # self.huamn_car_file_name_intersection = 'car_36_vid_11.csv'
-        # self.robot_car_file_name_intersection = 'car_52_vid_07_refPath.csv'
-        # self.human_start_step = 170
-        # self.robot_target_speed = 2
-        # self.robot_start_step = 40
+        self.huamn_car_file_name_intersection = 'car_36_vid_11.csv'
+        self.robot_car_file_name_intersection = 'car_52_vid_07_refPath.csv'
+        self.human_start_step = 170
+        self.robot_target_speed = 2
+        self.robot_start_step = 40
 
         # self.poly_num = 30
         self.episode_len = 12
@@ -93,11 +95,13 @@ class Simulator(object):
         self.use_safe_control = True
         # self.use_safe_control = False
 
-        # self.use_prediction = True
-        self.use_prediction = False
+        self.use_prediction = True
+        # self.use_prediction = False
 
-        self.save_plot = False
-        # self.save_plot = True
+        # self.save_plot = False
+        self.save_plot = True
+
+        self.fig_save_dir = "/home/anjianl/Desktop/project/optimized_dp/result/simulation/1006/intersection/2/pred/"
 
     def simulate(self):
 
@@ -284,7 +288,9 @@ class Simulator(object):
                     if '/Users/anjianli/anaconda3/envs/hcl-env/lib/python3.8' in sys.path:
                         plt.savefig("/Users/anjianli/Desktop/robotics/project/optimized_dp/result/simulation/intersection/2/t_{:.2f}_pred.png".format(curr_t))
                     else:
-                        plt.savefig("/home/anjianl/Desktop/project/optimized_dp/result/simulation/1002/intersection/2/t_{:.2f}_nopred.png".format(curr_t))
+                        if not os.path.exists(self.fig_save_dir):
+                            os.mkdir(self.fig_save_dir)
+                        plt.savefig(self.fig_save_dir + "t_{:.2f}_.png".format(curr_t))
 
         print("minimum distance is ", min_dist)
         if self.show_animation:  # pragma: no cover
