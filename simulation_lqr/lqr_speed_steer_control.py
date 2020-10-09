@@ -22,6 +22,7 @@ except ImportError:
 # LQR parameter
 lqr_Q = np.eye(5)
 lqr_R = np.eye(2)
+
 dt = 0.1  # time tick[s]
 # L = 0.5  # Wheel base of the vehicle [m]
 # max_steer = np.deg2rad(45.0)  # maximum steering angle[rad]

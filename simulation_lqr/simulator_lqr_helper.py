@@ -53,6 +53,11 @@ class SimulatorLQRHelper(object):
             human_car_traj["y_t"] += raw_traj[i]["y_t"]
             human_car_traj["v_t"] += raw_traj[i]["v_t"]
             human_car_traj["psi_t"] += raw_traj[i]["psi_t"]
+
+        if scenario == "roundabout":
+            human_car_traj['x_t'] = [x + 1000 for x in human_car_traj['x_t']]  # TODO: modify human car traj x
+            human_car_traj['y_t'] = [y + 1000 for y in human_car_traj['y_t']]  # TODO: modify human car traj y
+
         return human_car_traj
 
     def get_traj_from_ref_path(self, scenario, filename):
@@ -69,6 +74,10 @@ class SimulatorLQRHelper(object):
         robot_car_traj = {}
         robot_car_traj['x_t'] = np.asarray(traj_file["x_t"]).tolist()
         robot_car_traj['y_t'] = np.asarray(traj_file["y_t"]).tolist()
+
+        if scenario == "roundabout":
+            robot_car_traj['x_t'] = [x + 1000 for x in robot_car_traj['x_t']]  # TODO: modify robot car traj x
+            robot_car_traj['y_t'] = [y + 1000 for y in robot_car_traj['y_t']]  # TODO: modify robot car traj y
 
         return robot_car_traj
 

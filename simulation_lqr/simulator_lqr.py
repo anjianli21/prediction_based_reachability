@@ -2,7 +2,8 @@ import sys
 sys.path.append("/home/anjianl/Desktop/project/optimized_dp/")
 import pandas
 import os
-
+import shutil
+from PIL import Image
 
 from simulation_lqr.lqr_speed_steer_control import *
 from simulation_lqr.simulator_lqr_helper import SimulatorLQRHelper
@@ -28,8 +29,16 @@ class SimulatorLQR(SimulatorLQRHelper):
         print("Start simulating")
 
         ########################### Prepare Trajectory ########################################################################
+        # Configure path
+        if self.scenario == "intersection":
+            human_car_file_name = self.huamn_car_file_name_intersection
+            robot_car_file_name = self.robot_car_file_name_intersection
+        elif self.scenario == "roundabout":
+            human_car_file_name = self.huamn_car_file_name_roundabout
+            robot_car_file_name = self.robot_car_file_name_roundabout
+
         # Read prediction as human car's trajectory
-        human_car_traj = self.get_traj_from_prediction(scenario=self.scenario, filename=self.huamn_car_file_name_intersection)
+        human_car_traj = self.get_traj_from_prediction(scenario=self.scenario, filename=human_car_file_name)
         # Init human state for simulation
         x_h_init, y_h_init, psi_h_init, v_h_init = human_car_traj['x_t'][self.human_start_step], \
                                                    human_car_traj['y_t'][self.human_start_step], \
@@ -38,7 +47,7 @@ class SimulatorLQR(SimulatorLQRHelper):
         HumanCar = HumanState(x=x_h_init, y=y_h_init, psi=psi_h_init, v=v_h_init, ref_path=human_car_traj)
 
         # Read ref path as robot_car_traj
-        robot_car_traj_ref = self.get_traj_from_ref_path(scenario=self.scenario, filename=self.robot_car_file_name_intersection)
+        robot_car_traj_ref = self.get_traj_from_ref_path(scenario=self.scenario, filename=robot_car_file_name)
         x_r_init, y_r_init, psi_r_init, v_r_init = self.init_robot_state(robot_car_traj_ref, self.robot_start_step)
         v_r_init = self.robot_target_speed
         RobotCar = RobotState(x=x_r_init, y=y_r_init, yaw=psi_r_init, v=v_r_init)
@@ -56,7 +65,7 @@ class SimulatorLQR(SimulatorLQRHelper):
         t_list = [0]
 
         ########################### Main loop ########################################################################
-        max_t = 30.0  # max simulation time
+        max_t = self.max_t  # max simulation time
         goal_dis = 0.3
         robot_stop_speed = self.robot_target_speed
 
@@ -140,6 +149,9 @@ class SimulatorLQR(SimulatorLQRHelper):
             # Statistics ###########################################################################################################
             min_deviation = max(min_deviation, abs(e))
             print("minimum deviation is", min_deviation)
+            curr_min_dist = np.sqrt(rel_states['x_rel'] ** 2 + rel_states['y_rel'] ** 2)
+            min_dist = min(curr_min_dist, min_dist)
+            print("minimum car distance is", min_dist)
 
             # check goal ###########################################################################################################
             dx = RobotCar.x - robot_goal[0]
@@ -167,72 +179,164 @@ class SimulatorLQR(SimulatorLQRHelper):
                     plt.scatter(self.roundabout_curbs[0], self.roundabout_curbs[1], color='black', linewidths=0.03)
                 plt.axis("equal")
                 plt.grid(True)
-                plt.title("speed[m/s]:" + str(round(RobotCar.v, 2))
-                          + ",target index:" + str(target_ind))
+                plt.title("robot car speed (m/s):" + str(round(RobotCar.v, 2)) + ", min deviation:" + str(round(min_deviation, 2)) + ", min distance:" + str(round(min_dist, 2)))
                 plt.pause(0.0001)
 
-        # Plot after simulation finished
-        if show_animation:  # pragma: no cover
-            plt.close()
-            plt.subplots(1)
-            plt.plot(ax, ay, "xb", label="waypoints")
-            plt.plot(cx, cy, "-r", label="target course")
-            plt.plot(x_r_list, y_r_list, "-g", label="tracking")
-            plt.grid(True)
-            plt.axis("equal")
-            plt.xlabel("x[m]")
-            plt.ylabel("y[m]")
-            plt.legend()
+            if self.save_plot:
+                tmp_folder_path = self.fig_save_dir + "tmp/"
+                if not os.path.exists(tmp_folder_path):
+                    os.mkdir(tmp_folder_path)
+                plt.savefig(tmp_folder_path + "t_{:.2f}.png".format(curr_t))
 
-            plt.subplots(1)
-            plt.plot(s, [np.rad2deg(iyaw) for iyaw in cyaw], "-r", label="yaw")
-            plt.grid(True)
-            plt.legend()
-            plt.xlabel("line length[m]")
-            plt.ylabel("yaw angle[deg]")
+        # Convert png to gif ###########################################################################################################
+        if self.save_plot:
+            # Create the frames
+            frames = []
+            # imgs = glob.glob("*.png")
+            imgs = []
+            for i in np.arange(0.10, curr_t, 0.10):
+                imgs.append(
+                    tmp_folder_path + "t_{:.2f}.png".format(i))
+            for i in imgs:
+                new_frame = Image.open(i)
+                frames.append(new_frame)
 
-            plt.subplots(1)
-            plt.plot(s, ck, "-r", label="curvature")
-            plt.grid(True)
-            plt.legend()
-            plt.xlabel("line length[m]")
-            plt.ylabel("curvature [1/m]")
+            # Save into a GIF file that loops forever
+            save_dir = self.fig_save_dir
+            if self.use_safe_control:
+                if self.use_prediction:
+                    file_name = self.file_name + "_with_prediction_safe_control.gif"
+                else:
+                    file_name = self.file_name + "_no_prediction_safe_control.gif"
+            else:
+                file_name = self.file_name + "_no_safe_control.gif"
+            frames[0].save(
+                save_dir + file_name,
+                format='GIF',
+                append_images=frames[1:],
+                save_all=True,
+                duration=300, loop=0)
 
-            plt.show()
+            # Delete tmp dir
+            shutil.rmtree(tmp_folder_path)
+
+        # Plot after simulation finished ###########################################################################################################
+        # if self.show_animation:  # pragma: no cover
+        #     plt.close()
+        #     plt.subplots(1)
+        #     plt.plot(ax, ay, "xb", label="waypoints")
+        #     plt.plot(cx, cy, "-r", label="target course")
+        #     plt.plot(x_r_list, y_r_list, "-b", label="robot trajectory")
+        #     plt.plot(x_h_list, y_h_list, "-r", label="human trajectory")
+        #     plt.plot(x_r_list[-1], y_r_list[-1], "xg", label="robot pos")
+        #     plt.plot(x_h_list[-1], y_h_list[-1], "xr", label="human pos")
+        #     plt.grid(True)
+        #     plt.axis("equal")
+        #     plt.xlabel("x[m]")
+        #     plt.ylabel("y[m]")
+        #     plt.legend()
+        #
+        #     plt.subplots(1)
+        #     plt.plot(s, [np.rad2deg(iyaw) for iyaw in cyaw], "-r", label="yaw")
+        #     plt.grid(True)
+        #     plt.legend()
+        #     plt.xlabel("line length[m]")
+        #     plt.ylabel("yaw angle[deg]")
+        #
+        #     plt.subplots(1)
+        #     plt.plot(s, ck, "-r", label="curvature")
+        #     plt.grid(True)
+        #     plt.legend()
+        #     plt.xlabel("line length[m]")
+        #     plt.ylabel("curvature [1/m]")
+        #
+        #     plt.show()
         return 0
 
     def main(self):
 
         ###################################################################################################
         ########################### Intersection Scenario #################################################
-        self.scenario = "intersection"
-        self.fig_save_dir = "/home/anjianl/Desktop/project/optimized_dp/result/simulation/1008/intersection/"
-
-        # Choose a trajectory reference
-        # # TODO: trial 1
+        # self.scenario = "intersection"
+        #
+        # # Choose a trajectory reference
+        # # # TODO: trial 1
+        # # self.huamn_car_file_name_intersection = 'car_36_vid_11.csv'
+        # # self.robot_car_file_name_intersection = 'car_20_vid_09_refPath.csv'
+        # # self.human_start_step = 164
+        # # self.robot_target_speed = 2
+        # # self.robot_start_step = 67
+        # # self.max_t = 11
+        #
+        # # # Trial 2 TODO: Good show of our predicion works!
         # self.huamn_car_file_name_intersection = 'car_36_vid_11.csv'
         # self.robot_car_file_name_intersection = 'car_52_vid_07_refPath.csv'
         # self.human_start_step = 170
         # self.robot_target_speed = 2
-        # # self.robot_start_step = 40
+        # # Use full set is even worse than don't use safe control
         # self.robot_start_step = 42
+        # # Use safe control is both good
+        # # self.robot_start_step = 48
+        #
+        # self.max_t = 8
+        #
+        # # Configure parameters #############################################################################
+        # self.show_animation = True
+        # # self.show_animation = False
+        #
+        # self.use_safe_control = True
+        # # self.use_safe_control = False
+        #
+        # self.use_prediction = True
+        # # self.use_prediction = False
+        #
+        # # self.save_plot = True
+        # self.save_plot = False
+        #
+        # self.fig_save_dir = "/home/anjianl/Desktop/project/optimized_dp/result/simulation/1009/intersection/"
+        # self.file_name = "trial_2"
+        # self.simulate()
 
-        # # Trial 2 TODO: Good show of our predicion works!
-        self.huamn_car_file_name_intersection = 'car_36_vid_11.csv'
-        self.robot_car_file_name_intersection = 'car_20_vid_09_refPath.csv'
-        self.human_start_step = 164
+        ###################################################################################################
+        ########################### Roundabout Scenario #################################################
+        self.scenario = "roundabout"
+
+        # Choose a trajectory reference
+        # # TODO: trial 1
+        # self.huamn_car_file_name_roundabout = 'car_41.csv'
+        # self.robot_car_file_name_roundabout = 'car_36_refPath.csv'
+        # self.human_start_step = 30
+        # self.robot_target_speed = 2
+        # self.robot_start_step = 52
+        # self.robot_start_step = 53
+        # self.max_t = 7
+        # self.file_name = "trial_1"
+
+        ## TODO: trial 2
+        self.huamn_car_file_name_roundabout = 'car_29.csv'
+        self.robot_car_file_name_roundabout = 'car_30_refPath.csv'
+        self.human_start_step = 0
         self.robot_target_speed = 2
-        self.robot_start_step = 66
+        self.robot_start_step = 57
+        # self.robot_start_step = 58
 
-        # Configure parameters
+        self.max_t = 9
+        self.file_name = "trial_2"
+
+        # Configure parameters #############################################################################
         self.show_animation = True
         # self.show_animation = False
 
         self.use_safe_control = True
         # self.use_safe_control = False
 
-        # self.use_prediction = True
-        self.use_prediction = False
+        self.use_prediction = True
+        # self.use_prediction = False
+
+        self.save_plot = True
+        # self.save_plot = False
+
+        self.fig_save_dir = "/home/anjianl/Desktop/project/optimized_dp/result/simulation/1009/roundabout/"
 
         self.simulate()
 
