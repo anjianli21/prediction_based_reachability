@@ -1,24 +1,17 @@
-import numpy as np
 import sys
 sys.path.append("/Users/anjianli/Desktop/robotics/project/optimized_dp")
 sys.path.append("/home/anjianl/Desktop/project/optimized_dp")
-from matplotlib import pyplot as plt
-from matplotlib import animation, rc
-from argparse import ArgumentParser
 
 import pandas
-import scipy.io
-from scipy import integrate
-import time
 
 import os
 
-from simulation.optimal_control_reldyn5d import OptimalControlRelDyn5D
+from simulation_lqr.optimal_control_reldyn5d import OptimalControlRelDyn5D
 from prediction.process_prediction_v3 import ProcessPredictionV3
 from prediction.predict_mode_v3 import PredictModeV3
 from simulation.stanley_controller import *
-from simulation.human_car import *
-from simulation.optimal_control_bicycle4d import OptimalControlBicycle4D
+from simulation_lqr.human_car import *
+from simulation_lqr.optimal_control_bicycle4d import OptimalControlBicycle4D
 
 class Simulator2(object):
 

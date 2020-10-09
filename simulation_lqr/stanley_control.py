@@ -9,36 +9,25 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 sys.path.append("../../PathPlanning/CubicSpline/")
-sys.path.append("/Users/anjianli/Desktop/robotics/project/optimized_dp")
+
+sys.path.append("/home/anjianl/Desktop/project/optimized_dp/")
 
 try:
     from simulation_lqr import cubic_spline_planner
 except:
     raise
 
-from simulation.simulator import Simulator
 
-# Default design
-# k = 0.5  # control gain
-# Kp = 1.0  # speed proportional gain
-# dt = 0.1  # [s] time difference
-# L = 2.9  # [m] Wheel base of vehicle
-# max_steer = np.radians(30.0)  # [rad] max steering angle
-# min_v = 0.0
-
-# Self design
 k = 0.5  # control gain
 Kp = 1.0  # speed proportional gain
 dt = 0.1  # [s] time difference
-L = 2.788  # [m] Wheel base of vehicle
+L = 2.9  # [m] Wheel base of vehicle
 max_steer = np.radians(30.0)  # [rad] max steering angle
-min_v = 0.0
-
 
 show_animation = True
 
 
-class RobotState(object):
+class State(object):
     """
     Class representing the state of a vehicle.
     :param x: (float) x-coordinate
@@ -49,14 +38,11 @@ class RobotState(object):
 
     def __init__(self, x=0.0, y=0.0, yaw=0.0, v=0.0):
         """Instantiate the object."""
-        super(RobotState, self).__init__()
+        super(State, self).__init__()
         self.x = x
         self.y = y
         self.yaw = yaw
         self.v = v
-
-        self.l_r = 1.738
-        self.l_f = 1.058
 
     def update(self, acceleration, delta):
         """
@@ -71,19 +57,8 @@ class RobotState(object):
         self.y += self.v * np.sin(self.yaw) * dt
         self.yaw += self.v / L * np.tan(delta) * dt
         self.yaw = normalize_angle(self.yaw)
-        self.v = max(min_v, self.v + acceleration * dt)
-
-    def safe_update(self, beta, acceleration):
-
-        print(type(beta))
-        beta = beta.item()
-        acceleration = acceleration.item()
-        self.x += self.v * np.cos(self.yaw + beta) * dt
-        self.y += self.v * np.sin(self.yaw + beta) * dt
-        self.yaw += self.v / self.l_r * np.sin(beta) * dt
-        self.yaw = normalize_angle(self.yaw)
         self.v += acceleration * dt
-        self.v = max(self.v, 0)
+
 
 def pid_control(target, current):
     """
@@ -105,7 +80,7 @@ def stanley_control(state, cx, cy, cyaw, last_target_idx):
     :param last_target_idx: (int)
     :return: (float, int)
     """
-    current_target_idx, error_front_axle, min_d = calc_target_index(state, cx, cy)
+    current_target_idx, error_front_axle = calc_target_index(state, cx, cy)
 
     if last_target_idx >= current_target_idx:
         current_target_idx = last_target_idx
@@ -117,7 +92,7 @@ def stanley_control(state, cx, cy, cyaw, last_target_idx):
     # Steering control
     delta = theta_e + theta_d
 
-    return delta, current_target_idx, min_d
+    return delta, current_target_idx
 
 
 def normalize_angle(angle):
@@ -151,7 +126,6 @@ def calc_target_index(state, cx, cy):
     dx = [fx - icx for icx in cx]
     dy = [fy - icy for icy in cy]
     d = np.hypot(dx, dy)
-
     target_idx = np.argmin(d)
 
     # Project RMS error onto front axle vector
@@ -159,22 +133,16 @@ def calc_target_index(state, cx, cy):
                       -np.sin(state.yaw + np.pi / 2)]
     error_front_axle = np.dot([dx[target_idx], dy[target_idx]], front_axle_vec)
 
-    return target_idx, error_front_axle, min(d)
+    return target_idx, error_front_axle
 
 
 def main():
     """Plot an example of Stanley steering control on a cubic spline."""
     #  target course
-    # ax = [0.0, 100.0, 100.0, 50.0, 60.0]
-    # ay = [0.0, 0.0, -30.0, -20.0, 0.0]
-    # TODO: change tracking trajectory
-    human_car_traj = Simulator().get_traj_from_prediction(filename=Simulator().huamn_car_file_name_intersection)
-    robot_car_traj = Simulator().get_traj_from_ref_path(filename=Simulator().robot_car_file_name_intersection)
-    # ax = human_car_traj['x_t'][::10]
-    # ay = human_car_traj['y_t'][::10]
-    ax = robot_car_traj['x_t'][::10]
-    ay = robot_car_traj['y_t'][::10]
-
+    ax = [0.0, 100.0, 100.0, 50.0, 60.0]
+    ay = [0.0, 0.0, -30.0, -20.0, 0.0]
+    # ax = [0.0, 6.0, 12.5, 10.0, 17.5, 20.0, 25.0]
+    # ay = [0.0, -3.0, -5.0, 6.5, 3.0, 0.0, 0.0]
 
     cx, cy, cyaw, ck, s = cubic_spline_planner.calc_spline_course(
         ax, ay, ds=0.1)
@@ -184,9 +152,7 @@ def main():
     max_simulation_time = 100.0
 
     # Initial state
-    # state = State(x=-0.0, y=5.0, yaw=np.radians(20.0), v=0.0)
-    # TODO: change initial state
-    state = RobotState(x=ax[0], y=ay[0], yaw=np.radians(200.0), v=30.0 / 3.6)
+    state = State(x=-0.0, y=5.0, yaw=np.radians(20.0), v=0.0)
 
     last_idx = len(cx) - 1
     time = 0.0

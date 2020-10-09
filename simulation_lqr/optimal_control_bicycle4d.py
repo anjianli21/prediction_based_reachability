@@ -29,19 +29,15 @@ class OptimalControlBicycle4D(object):
 
         # Data path
         if self.scenario == "intersection":
-            if '/Users/anjianli/anaconda3/envs/hcl-env/lib/python3.8' not in sys.path:
-                # self.data_path = "/home/anjianl/Desktop/project/optimized_dp/data/brs/0929-correct/obstacle/intersection/"
-                # TODO: add buffer area 1.5m
-                self.data_path = "/home/anjianl/Desktop/project/optimized_dp/data/brs/1005-correct/obstacle_buffer_1d5/intersection/"
-            else:
-                self.data_path = "/Users/anjianli/Desktop/robotics/project/optimized_dp/data/brs/0929-correct/obstacle/intersection/"
+            # self.data_path = "/home/anjianl/Desktop/project/optimized_dp/data/brs/0929-correct/obstacle/intersection/"
+            # self.data_path = "/home/anjianl/Desktop/project/optimized_dp/data/brs/1005-correct/obstacle_buffer_1d5/intersection/"
+            # TODO: use buffer area 1m
+            self.data_path = "/home/anjianl/Desktop/project/optimized_dp/data/brs/1006-correct/obstacle_buffer_1m/intersection/"
         elif self.scenario == "roundabout":
-            if '/Users/anjianli/anaconda3/envs/hcl-env/lib/python3.8' not in sys.path:
-                # self.data_path = "/home/anjianl/Desktop/project/optimized_dp/data/brs/0929-correct/obstacle/roundabout/"
-                # TODO: add buffer area 1.5m
-                self.data_path = "/home/anjianl/Desktop/project/optimized_dp/data/brs/1005-correct/obstacle_buffer_1d5/roundabout/"
-            else:
-                self.data_path = "/Users/anjianli/Desktop/robotics/project/optimized_dp/data/brs/0929-correct/obstacle/roundabout/"
+            # self.data_path = "/home/anjianl/Desktop/project/optimized_dp/data/brs/0929-correct/obstacle/roundabout/"
+            # self.data_path = "/home/anjianl/Desktop/project/optimized_dp/data/brs/1005-correct/obstacle_buffer_1d5/roundabout/"
+            # TODO: use buffer area 1m
+            self.data_path = "/home/anjianl/Desktop/project/optimized_dp/data/brs/1006-correct/obstacle_buffer_1m/roundabout/"
 
         # Computational bound for valfunc and optctrl
         # (x_r, y_r, psi_r, v_r)
@@ -88,6 +84,7 @@ class OptimalControlBicycle4D(object):
 
         else:
             print("the robot states is outside of computation range!")
+            # print(self.robot_curr_states)
             self.curr_valfunc = 100
             self.curr_optctrl_beta_r = 0
             self.curr_optctrl_a_r = 0
