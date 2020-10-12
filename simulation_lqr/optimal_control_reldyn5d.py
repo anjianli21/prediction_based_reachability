@@ -31,7 +31,7 @@ class OptimalControlRelDyn5D(object):
 
     """
 
-    def __init__(self, human_curr_states, robot_curr_states, h_drv_mode, h_drv_mode_pro, use_prediction):
+    def __init__(self, human_curr_states, robot_curr_states, h_drv_mode, h_drv_mode_pro, use_prediction, safe_data):
 
         # human_curr_states = {x_h, y_h, v_h, psi_h}
         self.human_curr_states = human_curr_states
@@ -63,6 +63,12 @@ class OptimalControlRelDyn5D(object):
         self.x_rel_dim = int(self.x_rel_bound[1] * 4 + 1)
         self.y_rel_dim = int(self.y_rel_bound[1] * 4 + 1)
 
+        # Safe data is preloaded in simulation, so just use here
+        # TODO: be careful, use self.h_drv_mode instead of h_drv_mode, because for no prediction, we set self.h_drv_mode = -1 manually
+        self.valfunc = safe_data["reldyn5d"]["reldyn5d_brs_mode{:d}".format(self.h_drv_mode)]
+        self.beta_r = safe_data["reldyn5d"]["reldyn5d_ctrl_beta_mode{:d}".format(self.h_drv_mode)]
+        self.a_r = safe_data["reldyn5d"]["reldyn5d_ctrl_acc_mode{:d}".format(self.h_drv_mode)]
+
     def get_optctrl(self):
 
         # Get relative states
@@ -72,14 +78,14 @@ class OptimalControlRelDyn5D(object):
 
         if self.check_valid(self.rel_states):
 
-            # Choose valfunc and ctrl (beta_r, a_r)
-            self.valfunc_path = self.data_path + "mode{:d}/reldyn5d_brs_mode{:d}_t_3.00.npy".format(self.h_drv_mode, self.h_drv_mode)
-            self.beta_r_path = self.data_path + "mode{:d}/reldyn5d_ctrl_beta_mode{:d}_t_3.00.npy".format(self.h_drv_mode, self.h_drv_mode)
-            self.a_r_path = self.data_path + "mode{:d}/reldyn5d_ctrl_acc_mode{:d}_t_3.00.npy".format(self.h_drv_mode, self.h_drv_mode)
-
-            self.valfunc = np.load(self.valfunc_path)
-            self.beta_r = np.load(self.beta_r_path)
-            self.a_r = np.load(self.a_r_path)
+            # # Choose valfunc and ctrl (beta_r, a_r)
+            # self.valfunc_path = self.data_path + "mode{:d}/reldyn5d_brs_mode{:d}_t_3.00.npy".format(self.h_drv_mode, self.h_drv_mode)
+            # self.beta_r_path = self.data_path + "mode{:d}/reldyn5d_ctrl_beta_mode{:d}_t_3.00.npy".format(self.h_drv_mode, self.h_drv_mode)
+            # self.a_r_path = self.data_path + "mode{:d}/reldyn5d_ctrl_acc_mode{:d}_t_3.00.npy".format(self.h_drv_mode, self.h_drv_mode)
+            #
+            # self.valfunc = np.load(self.valfunc_path)
+            # self.beta_r = np.load(self.beta_r_path)
+            # self.a_r = np.load(self.a_r_path)
 
             # print("valfunc size", np.shape(self.valfunc))
             # print("beta_r size", np.shape(self.beta_r))

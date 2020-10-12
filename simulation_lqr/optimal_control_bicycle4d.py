@@ -23,14 +23,16 @@ class OptimalControlBicycle4D(object):
 
     """
 
-    def __init__(self, robot_curr_states, scenario, valfunc, beta_r, a_r):
+    def __init__(self, robot_curr_states, scenario, safe_data):
 
         # robot_curr_states = {x_r, y_r, v_r, psi_r, beta_r}
         self.robot_curr_states = robot_curr_states
         self.scenario = scenario
-        self.valfunc = valfunc
-        self.beta_r = beta_r
-        self.a_r = a_r
+
+        # Value functions are pre-loaded in simulator, thus we directly use here
+        self.valfunc = safe_data["bicycle4d"]["valfunc"]
+        self.beta_r = safe_data["bicycle4d"]["beta_r"]
+        self.a_r = safe_data["bicycle4d"]["a_r"]
 
         # Data path
         if self.scenario == "intersection":

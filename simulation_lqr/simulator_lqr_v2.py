@@ -103,14 +103,13 @@ class SimulatorLQRV2(SimulatorLQRHelper):
                 human_curr_states={'x_h': HumanCar.x_h, 'y_h': HumanCar.y_h, 'psi_h': HumanCar.psi_h,
                                    'v_h': HumanCar.v_h},
                 robot_curr_states={'x_r': RobotCar.x, 'y_r': RobotCar.y, 'psi_r': RobotCar.yaw, 'v_r': RobotCar.v},
-                h_drv_mode=mode_num, h_drv_mode_pro=mode_probability, use_prediction=self.use_prediction).get_optctrl()
+                h_drv_mode=mode_num, h_drv_mode_pro=mode_probability, use_prediction=self.use_prediction,
+                safe_data=self.safe_data).get_optctrl()
 
             _, val_func_bicycle4d, optctrl_beta_r_bicycle4d, optctrl_a_r_bicycle4d = OptimalControlBicycle4D(
                 robot_curr_states={'x_r': RobotCar.x, 'y_r': RobotCar.y, 'psi_r': RobotCar.yaw, 'v_r': RobotCar.v},
                 scenario=self.scenario,
-                valfunc=self.valfunc,
-                beta_r=self.beta_r,
-                a_r=self.a_r).get_optctrl()
+                safe_data=self.safe_data).get_optctrl()
 
             reachable_set_coordinate = np.asarray([
                 contour_rel_coordinate[0, :] * np.cos(RobotCar.yaw) - contour_rel_coordinate[1, :] * np.sin(
@@ -244,6 +243,53 @@ class SimulatorLQRV2(SimulatorLQRHelper):
 
         return 0
 
+    def load_safe_data(self):
+
+        self.safe_data = {}
+
+        # load Bicycle4D data ####################################################################################################
+        # Data path
+        if self.scenario == "intersection":
+            # TODO: use buffer area 1m
+            self.data_path_bicycle4d = "/home/anjianl/Desktop/project/optimized_dp/data/brs/1006-correct/obstacle_buffer_1m/intersection/"
+        elif self.scenario == "roundabout":
+            # TODO: use buffer area 1m
+            self.data_path_bicycle4d = "/home/anjianl/Desktop/project/optimized_dp/data/brs/1006-correct/obstacle_buffer_1m/roundabout/"
+
+        if self.scenario == "intersection":
+            self.valfunc_path_bicycle4d = self.data_path_bicycle4d + "bicycle4d_brs_intersection_t_3.00.npy"
+            self.beta_r_path_bicycle4d = self.data_path_bicycle4d + "bicycle4d_intersection_ctrl_beta_t_3.00.npy"
+            self.a_r_path_bicycle4d = self.data_path_bicycle4d + "bicycle4d_intersection_ctrl_acc_t_3.00.npy"
+
+        elif self.scenario == "roundabout":
+            self.valfunc_path_bicycle4d = self.data_path_bicycle4d + "bicycle4d_brs_roundabout_t_3.00.npy"
+            self.beta_r_path_bicycle4d = self.data_path_bicycle4d + "bicycle4d_roundabout_ctrl_beta_t_3.00.npy"
+            self.a_r_path_bicycle4d = self.data_path_bicycle4d + "bicycle4d_roundabout_ctrl_acc_t_3.00.npy"
+
+        self.safe_data["bicycle4d"] = {}
+        # Previous interpolation
+        self.safe_data["bicycle4d"]["valfunc"] = np.load(self.valfunc_path_bicycle4d)
+        self.safe_data["bicycle4d"]["beta_r"] = np.load(self.beta_r_path_bicycle4d)
+        self.safe_data["bicycle4d"]["a_r"] = np.load(self.a_r_path_bicycle4d)
+
+        # load Reldyn5D data ####################################################################################################
+        self.safe_data["reldyn5d"] = {}
+
+        self.data_path_reldyn5d = "/home/anjianl/Desktop/project/optimized_dp/data/brs/1006-correct/"
+
+        # Choose valfunc and ctrl (beta_r, a_r)
+        for mode in range(-1, 6):
+            self.valfunc_path_reldyn5d = self.data_path_reldyn5d + "mode{:d}/reldyn5d_brs_mode{:d}_t_3.00.npy".format(mode,
+                                                                                                    mode)
+            self.beta_r_path_reldyn5d = self.data_path_reldyn5d + "mode{:d}/reldyn5d_ctrl_beta_mode{:d}_t_3.00.npy".format(mode,
+                                                                                                         mode)
+            self.a_r_path_reldyn5d = self.data_path_reldyn5d + "mode{:d}/reldyn5d_ctrl_acc_mode{:d}_t_3.00.npy".format(mode,
+                                                                                                     mode)
+
+            self.safe_data["reldyn5d"]["reldyn5d_brs_mode{:d}".format(mode)] = np.load(self.valfunc_path_reldyn5d)
+            self.safe_data["reldyn5d"]["reldyn5d_ctrl_beta_mode{:d}".format(mode)] = np.load(self.beta_r_path_reldyn5d)
+            self.safe_data["reldyn5d"]["reldyn5d_ctrl_acc_mode{:d}".format(mode)] = np.load(self.a_r_path_reldyn5d)
+
     def save_data_to_json(self, filename):
 
         avg_max_devation = sum(self.max_deviation_list) / len(self.max_deviation_list)
@@ -258,55 +304,33 @@ class SimulatorLQRV2(SimulatorLQRHelper):
 
         # Write statistics to json file #######################################################################
         data = {}
-        data["max_deviation"] = self.max_deviation_list
-        data["min_distance"] = self.min_dist_list
         data["avg_max_deviation"] = avg_max_devation
         data["avg_min_distance"] = avg_min_distance
+        data["max_deviation"] = self.max_deviation_list
+        data["min_distance"] = self.min_dist_list
 
         data["reldyn5d_control_time"] = self.time_use_reldyn5d_control
         data["bicycle4d_control_time"] = self.time_use_bicycl4d_control
         data["avg_reldyn5d_control_time"] = avg_reldyn5d_control_time
         data["avg_bicycle4d_control_time"] = avg_bicycle4d_control_time
 
-        if self.use_prediction:
-            with open("/home/anjianl/Desktop/project/optimized_dp/result/statistics/1011/simulation/" + filename + "_pred.json",
-                      'w') as outfile:
-                json.dump(data, outfile)
+        if self.use_safe_control:
+            if self.use_prediction:
+                with open("/home/anjianl/Desktop/project/optimized_dp/result/statistics/1011/simulation/" + filename + "_pred.json",
+                          'w') as outfile:
+                    json.dump(data, outfile)
+                    print("With prediction statistics saved!")
+            else:
+                with open("/home/anjianl/Desktop/project/optimized_dp/result/statistics/1011/simulation/" + filename + "_no_pred.json",
+                          'w') as outfile:
+                    json.dump(data, outfile)
+                    print("no prediction statistics saved!")
         else:
-            with open("/home/anjianl/Desktop/project/optimized_dp/result/statistics/1011/simulation/" + filename + "_no_pred.json",
-                      'w') as outfile:
+            with open(
+                    "/home/anjianl/Desktop/project/optimized_dp/result/statistics/1011/simulation/" + filename + "_no_safe_ctrl.json",
+                    'w') as outfile:
                 json.dump(data, outfile)
-
-    def load_data(self):
-
-        # Data path
-        if self.scenario == "intersection":
-            # self.data_path = "/home/anjianl/Desktop/project/optimized_dp/data/brs/0929-correct/obstacle/intersection/"
-            # self.data_path = "/home/anjianl/Desktop/project/optimized_dp/data/brs/1005-correct/obstacle_buffer_1d5/intersection/"
-            # TODO: use buffer area 1m
-            self.data_path = "/home/anjianl/Desktop/project/optimized_dp/data/brs/1006-correct/obstacle_buffer_1m/intersection/"
-        elif self.scenario == "roundabout":
-            # self.data_path = "/home/anjianl/Desktop/project/optimized_dp/data/brs/0929-correct/obstacle/roundabout/"
-            # self.data_path = "/home/anjianl/Desktop/project/optimized_dp/data/brs/1005-correct/obstacle_buffer_1d5/roundabout/"
-            # TODO: use buffer area 1m
-            self.data_path = "/home/anjianl/Desktop/project/optimized_dp/data/brs/1006-correct/obstacle_buffer_1m/roundabout/"
-
-        if self.scenario == "intersection":
-            self.valfunc_path = self.data_path + "bicycle4d_brs_intersection_t_3.00.npy"
-            self.beta_r_path = self.data_path + "bicycle4d_intersection_ctrl_beta_t_3.00.npy"
-            self.a_r_path = self.data_path + "bicycle4d_intersection_ctrl_acc_t_3.00.npy"
-
-        elif self.scenario == "roundabout":
-            self.valfunc_path = self.data_path + "bicycle4d_brs_roundabout_t_3.00.npy"
-            self.beta_r_path = self.data_path + "bicycle4d_roundabout_ctrl_beta_t_3.00.npy"
-            self.a_r_path = self.data_path + "bicycle4d_roundabout_ctrl_acc_t_3.00.npy"
-
-        start_time = time.time()
-
-        # Previous interpolation
-        self.valfunc = np.load(self.valfunc_path)
-        self.beta_r = np.load(self.beta_r_path)
-        self.a_r = np.load(self.a_r_path)
+                print("no safe control statistics saved!")
 
     def main(self):
 
@@ -315,13 +339,13 @@ class SimulatorLQRV2(SimulatorLQRHelper):
         # Configure parameters #############################################################################
         self.scenario = "intersection"
         # Load value function and control data
-        self.load_data()
+        self.load_safe_data()
 
-        self.show_animation = True
-        # self.show_animation = False
+        # self.show_animation = True
+        self.show_animation = False
 
-        self.use_safe_control = True
-        # self.use_safe_control = False
+        # self.use_safe_control = True
+        self.use_safe_control = False
 
         self.use_prediction = True
         # self.use_prediction = False
@@ -358,7 +382,7 @@ class SimulatorLQRV2(SimulatorLQRHelper):
                 self.simulate()
 
             # Save data to json file
-            self.save_data_to_json(filename="h_35_r_20")
+            self.save_data_to_json(filename="h_36_r_20")
 
         return 0
 
