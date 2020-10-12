@@ -3,6 +3,8 @@ sys.path.append("/home/anjianl/Desktop/project/optimized_dp/")
 import pandas
 import os
 import shutil
+import json
+import time
 from PIL import Image
 
 from simulation_lqr.lqr_speed_steer_control import *
@@ -11,10 +13,10 @@ from simulation_lqr.human_car import HumanState
 from simulation_lqr.optimal_control_reldyn5d import OptimalControlRelDyn5D
 from simulation_lqr.optimal_control_bicycle4d import OptimalControlBicycle4D
 
-class SimulatorLQR(SimulatorLQRHelper):
+class SimulatorLQRV2(SimulatorLQRHelper):
 
     def __init__(self):
-        super(SimulatorLQR, self).__init__()
+        super(SimulatorLQRV2, self).__init__()
 
         # Update frequency for the prediction, dt = 0.1s
         self.mode_predict_span = 1
@@ -76,10 +78,15 @@ class SimulatorLQR(SimulatorLQRHelper):
         curr_step_human = self.human_start_step
         curr_step = 0
         min_dist = 100
-        min_deviation = 0
+        max_deviation = 0
+
+        time_use_reldyn5d_control = 0
+        time_use_bicycl4d_control = 0
 
         # Main loop
         while curr_t <= max_t:
+
+            start_time = time.time()
 
             # Get prediction ############################################################################################################
             if int(curr_step) % self.mode_predict_span == 0 and curr_step_human <= len(human_car_traj["x_t"]) - 1:
@@ -100,7 +107,10 @@ class SimulatorLQR(SimulatorLQRHelper):
 
             _, val_func_bicycle4d, optctrl_beta_r_bicycle4d, optctrl_a_r_bicycle4d = OptimalControlBicycle4D(
                 robot_curr_states={'x_r': RobotCar.x, 'y_r': RobotCar.y, 'psi_r': RobotCar.yaw, 'v_r': RobotCar.v},
-                scenario=self.scenario).get_optctrl()
+                scenario=self.scenario,
+                valfunc=self.valfunc,
+                beta_r=self.beta_r,
+                a_r=self.a_r).get_optctrl()
 
             reachable_set_coordinate = np.asarray([
                 contour_rel_coordinate[0, :] * np.cos(RobotCar.yaw) - contour_rel_coordinate[1, :] * np.sin(
@@ -125,9 +135,11 @@ class SimulatorLQR(SimulatorLQRHelper):
                 if val_func_reldyn5d <= val_func_bicycle4d:
                     print("Use reldyn5d controller")
                     safe_update(RobotCar, optctrl_a_r_reldyn5d, optctrl_beta_r_reldyn5d)
+                    time_use_reldyn5d_control += 1
                 else:
                     safe_update(RobotCar, optctrl_a_r_bicycle4d, optctrl_beta_r_bicycle4d)
                     print("Use bicycle4d controller")
+                    time_use_bicycl4d_control += 1
             else:
                 RobotCar = update(RobotCar, ai, dl) # Use LQR controller
 
@@ -147,11 +159,11 @@ class SimulatorLQR(SimulatorLQRHelper):
             curr_step_human += 1
 
             # Statistics ###########################################################################################################
-            min_deviation = max(min_deviation, abs(e))
-            print("minimum deviation is", min_deviation)
+            max_deviation = max(max_deviation, abs(e))
+            # print("maximum deviation is", max_deviation)
             curr_min_dist = np.sqrt(rel_states['x_rel'] ** 2 + rel_states['y_rel'] ** 2)
             min_dist = min(curr_min_dist, min_dist)
-            print("minimum car distance is", min_dist)
+            # print("minimum car distance is", min_dist)
 
             # check goal ###########################################################################################################
             dx = RobotCar.x - robot_goal[0]
@@ -179,7 +191,7 @@ class SimulatorLQR(SimulatorLQRHelper):
                     plt.scatter(self.roundabout_curbs[0], self.roundabout_curbs[1], color='black', linewidths=0.03)
                 plt.axis("equal")
                 plt.grid(True)
-                plt.title("robot car speed (m/s):" + str(round(RobotCar.v, 2)) + ", min deviation:" + str(round(min_deviation, 2)) + ", min distance:" + str(round(min_dist, 2)))
+                plt.title("robot car speed (m/s):" + str(round(RobotCar.v, 2)) + ", max deviation:" + str(round(max_deviation, 2)) + ", min distance:" + str(round(min_dist, 2)))
                 plt.pause(0.0001)
 
             if self.save_plot:
@@ -187,6 +199,16 @@ class SimulatorLQR(SimulatorLQRHelper):
                 if not os.path.exists(tmp_folder_path):
                     os.mkdir(tmp_folder_path)
                 plt.savefig(tmp_folder_path + "t_{:.2f}.png".format(curr_t))
+
+            end_time = time.time()
+            print("this step takes", end_time - start_time, "s")
+
+        # Save statistics ###########################################################################################################
+        print("this episode finishes!")
+        self.max_deviation_list.append(max_deviation)
+        self.min_dist_list.append(min_dist)
+        self.time_use_reldyn5d_control.append(time_use_reldyn5d_control)
+        self.time_use_bicycl4d_control.append(time_use_bicycl4d_control)
 
         # Convert png to gif ###########################################################################################################
         if self.save_plot:
@@ -220,110 +242,83 @@ class SimulatorLQR(SimulatorLQRHelper):
             # Delete tmp dir
             shutil.rmtree(tmp_folder_path)
 
-        # Plot after simulation finished ###########################################################################################################
-        # if self.show_animation:  # pragma: no cover
-        #     plt.close()
-        #     plt.subplots(1)
-        #     plt.plot(ax, ay, "xb", label="waypoints")
-        #     plt.plot(cx, cy, "-r", label="target course")
-        #     plt.plot(x_r_list, y_r_list, "-b", label="robot trajectory")
-        #     plt.plot(x_h_list, y_h_list, "-r", label="human trajectory")
-        #     plt.plot(x_r_list[-1], y_r_list[-1], "xg", label="robot pos")
-        #     plt.plot(x_h_list[-1], y_h_list[-1], "xr", label="human pos")
-        #     plt.grid(True)
-        #     plt.axis("equal")
-        #     plt.xlabel("x[m]")
-        #     plt.ylabel("y[m]")
-        #     plt.legend()
-        #
-        #     plt.subplots(1)
-        #     plt.plot(s, [np.rad2deg(iyaw) for iyaw in cyaw], "-r", label="yaw")
-        #     plt.grid(True)
-        #     plt.legend()
-        #     plt.xlabel("line length[m]")
-        #     plt.ylabel("yaw angle[deg]")
-        #
-        #     plt.subplots(1)
-        #     plt.plot(s, ck, "-r", label="curvature")
-        #     plt.grid(True)
-        #     plt.legend()
-        #     plt.xlabel("line length[m]")
-        #     plt.ylabel("curvature [1/m]")
-        #
-        #     plt.show()
         return 0
+
+    def save_data_to_json(self, filename):
+
+        avg_max_devation = sum(self.max_deviation_list) / len(self.max_deviation_list)
+        avg_min_distance = sum(self.min_dist_list) / len(self.min_dist_list)
+        avg_reldyn5d_control_time = sum(self.time_use_reldyn5d_control) / len(self.time_use_reldyn5d_control)
+        avg_bicycle4d_control_time = sum(self.time_use_bicycl4d_control) / len(self.time_use_bicycl4d_control)
+
+        print("average max deviation is", avg_max_devation)
+        print("average min distance is", avg_min_distance)
+        print("average reldyn5d control is", avg_reldyn5d_control_time)
+        print("average bicycle4d control is", avg_bicycle4d_control_time)
+
+        # Write statistics to json file #######################################################################
+        data = {}
+        data["max_deviation"] = self.max_deviation_list
+        data["min_distance"] = self.min_dist_list
+        data["avg_max_deviation"] = avg_max_devation
+        data["avg_min_distance"] = avg_min_distance
+
+        data["reldyn5d_control_time"] = self.time_use_reldyn5d_control
+        data["bicycle4d_control_time"] = self.time_use_bicycl4d_control
+        data["avg_reldyn5d_control_time"] = avg_reldyn5d_control_time
+        data["avg_bicycle4d_control_time"] = avg_bicycle4d_control_time
+
+        if self.use_prediction:
+            with open("/home/anjianl/Desktop/project/optimized_dp/result/statistics/1011/simulation/" + filename + "_pred.json",
+                      'w') as outfile:
+                json.dump(data, outfile)
+        else:
+            with open("/home/anjianl/Desktop/project/optimized_dp/result/statistics/1011/simulation/" + filename + "_no_pred.json",
+                      'w') as outfile:
+                json.dump(data, outfile)
+
+    def load_data(self):
+
+        # Data path
+        if self.scenario == "intersection":
+            # self.data_path = "/home/anjianl/Desktop/project/optimized_dp/data/brs/0929-correct/obstacle/intersection/"
+            # self.data_path = "/home/anjianl/Desktop/project/optimized_dp/data/brs/1005-correct/obstacle_buffer_1d5/intersection/"
+            # TODO: use buffer area 1m
+            self.data_path = "/home/anjianl/Desktop/project/optimized_dp/data/brs/1006-correct/obstacle_buffer_1m/intersection/"
+        elif self.scenario == "roundabout":
+            # self.data_path = "/home/anjianl/Desktop/project/optimized_dp/data/brs/0929-correct/obstacle/roundabout/"
+            # self.data_path = "/home/anjianl/Desktop/project/optimized_dp/data/brs/1005-correct/obstacle_buffer_1d5/roundabout/"
+            # TODO: use buffer area 1m
+            self.data_path = "/home/anjianl/Desktop/project/optimized_dp/data/brs/1006-correct/obstacle_buffer_1m/roundabout/"
+
+        if self.scenario == "intersection":
+            self.valfunc_path = self.data_path + "bicycle4d_brs_intersection_t_3.00.npy"
+            self.beta_r_path = self.data_path + "bicycle4d_intersection_ctrl_beta_t_3.00.npy"
+            self.a_r_path = self.data_path + "bicycle4d_intersection_ctrl_acc_t_3.00.npy"
+
+        elif self.scenario == "roundabout":
+            self.valfunc_path = self.data_path + "bicycle4d_brs_roundabout_t_3.00.npy"
+            self.beta_r_path = self.data_path + "bicycle4d_roundabout_ctrl_beta_t_3.00.npy"
+            self.a_r_path = self.data_path + "bicycle4d_roundabout_ctrl_acc_t_3.00.npy"
+
+        start_time = time.time()
+
+        # Previous interpolation
+        self.valfunc = np.load(self.valfunc_path)
+        self.beta_r = np.load(self.beta_r_path)
+        self.a_r = np.load(self.a_r_path)
 
     def main(self):
 
         ###################################################################################################
         ########################### Intersection Scenario #################################################
-        # self.scenario = "intersection"
-        #
-        # # Choose a trajectory reference
-        # # # TODO: trial 1
-        # # self.huamn_car_file_name_intersection = 'car_36_vid_11.csv'
-        # # self.robot_car_file_name_intersection = 'car_20_vid_09_refPath.csv'
-        # # self.human_start_step = 164
-        # # self.robot_target_speed = 2
-        # # self.robot_start_step = 67
-        # # self.max_t = 11
-        #
-        # # # Trial 2 TODO: Good show of our predicion works!
-        # self.huamn_car_file_name_intersection = 'car_36_vid_11.csv'
-        # self.robot_car_file_name_intersection = 'car_52_vid_07_refPath.csv'
-        # self.human_start_step = 170
-        # self.robot_target_speed = 2
-        # # Use full set is even worse than don't use safe control
-        # self.robot_start_step = 42
-        # # Use safe control is both good
-        # # self.robot_start_step = 48
-        #
-        # self.max_t = 8
-        #
-        # # Configure parameters #############################################################################
-        # self.show_animation = True
-        # # self.show_animation = False
-        #
-        # self.use_safe_control = True
-        # # self.use_safe_control = False
-        #
-        # self.use_prediction = True
-        # # self.use_prediction = False
-        #
-        # # self.save_plot = True
-        # self.save_plot = False
-        #
-        # self.fig_save_dir = "/home/anjianl/Desktop/project/optimized_dp/result/simulation/1009/intersection/"
-        # self.file_name = "trial_2"
-        # self.simulate()
-
-        ###################################################################################################
-        ########################### Roundabout Scenario #################################################
-        self.scenario = "roundabout"
-
-        # Choose a trajectory reference
-        # # TODO: trial 1
-        # self.huamn_car_file_name_roundabout = 'car_41.csv'
-        # self.robot_car_file_name_roundabout = 'car_36_refPath.csv'
-        # self.human_start_step = 30
-        # self.robot_target_speed = 2
-        # self.robot_start_step = 53
-        # self.max_t = 7
-        # self.file_name = "trial_1"
-
-        ## TODO: trial 2
-        self.huamn_car_file_name_roundabout = 'car_29.csv'
-        self.robot_car_file_name_roundabout = 'car_30_refPath.csv'
-        self.human_start_step = 0
-        self.robot_target_speed = 2
-        self.robot_start_step = 57
-
-        self.max_t = 9
-        self.file_name = "trial_2"
-
         # Configure parameters #############################################################################
-        # self.show_animation = True
-        self.show_animation = False
+        self.scenario = "intersection"
+        # Load value function and control data
+        self.load_data()
+
+        self.show_animation = True
+        # self.show_animation = False
 
         self.use_safe_control = True
         # self.use_safe_control = False
@@ -334,12 +329,39 @@ class SimulatorLQR(SimulatorLQRHelper):
         # self.save_plot = True
         self.save_plot = False
 
-        self.fig_save_dir = "/home/anjianl/Desktop/project/optimized_dp/result/simulation/1009/roundabout/"
+        self.fig_save_dir = "/home/anjianl/Desktop/project/optimized_dp/result/simulation/1009/intersection/"
+        self.file_name = "trial_1"
 
-        self.simulate()
+        # Choose a trajectory reference
+        # # TODO: trial 1
+        self.huamn_car_file_name_intersection = 'car_36_vid_11.csv'
+        self.robot_car_file_name_intersection = 'car_20_vid_09_refPath.csv'
+        self.human_start_step = 164
+        self.robot_target_speed = 2
+        robot_start_step = 67
+        self.max_t = 11
+
+
+        # Loop over all options
+        range_radius = 5
+        for use_prediction in [True, False]:
+            # Have a list to store statistics
+            self.min_dist_list = []
+            self.max_deviation_list = []
+            self.time_use_reldyn5d_control = []
+            self.time_use_bicycl4d_control = []
+
+            self.use_prediction = use_prediction
+
+            for i in range(robot_start_step - range_radius, robot_start_step + range_radius + 1):
+                self.robot_start_step = i
+                self.simulate()
+
+            # Save data to json file
+            self.save_data_to_json(filename="h_35_r_20")
 
         return 0
 
 
 if __name__ == "__main__":
-    SimulatorLQR().main()
+    SimulatorLQRV2().main()

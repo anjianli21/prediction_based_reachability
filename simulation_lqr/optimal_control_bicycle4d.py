@@ -1,6 +1,8 @@
 import math
 import numpy as np
 import time
+import os
+import pickle
 import sys
 
 from scipy.interpolate import RegularGridInterpolator
@@ -21,11 +23,14 @@ class OptimalControlBicycle4D(object):
 
     """
 
-    def __init__(self, robot_curr_states, scenario):
+    def __init__(self, robot_curr_states, scenario, valfunc, beta_r, a_r):
 
         # robot_curr_states = {x_r, y_r, v_r, psi_r, beta_r}
         self.robot_curr_states = robot_curr_states
         self.scenario = scenario
+        self.valfunc = valfunc
+        self.beta_r = beta_r
+        self.a_r = a_r
 
         # Data path
         if self.scenario == "intersection":
@@ -56,31 +61,28 @@ class OptimalControlBicycle4D(object):
 
         if self.check_valid(self.robot_curr_states):
 
-            # Choose valfunc and ctrl (beta_r, a_r)
-            if self.scenario == "intersection":
-                self.valfunc_path = self.data_path + "bicycle4d_brs_intersection_t_3.00.npy"
-                self.beta_r_path = self.data_path + "bicycle4d_intersection_ctrl_beta_t_3.00.npy"
-                self.a_r_path = self.data_path + "bicycle4d_intersection_ctrl_acc_t_3.00.npy"
-            elif self.scenario == "roundabout":
-                self.valfunc_path = self.data_path + "bicycle4d_brs_roundabout_t_3.00.npy"
-                self.beta_r_path = self.data_path + "bicycle4d_roundabout_ctrl_beta_t_3.00.npy"
-                self.a_r_path = self.data_path + "bicycle4d_roundabout_ctrl_acc_t_3.00.npy"
-
-            self.valfunc = np.load(self.valfunc_path)
-            self.beta_r = np.load(self.beta_r_path)
-            self.a_r = np.load(self.a_r_path)
-
-            # print("valfunc size", np.shape(self.valfunc))
-            # print("beta_r size", np.shape(self.beta_r))
-            # print("a_r size", np.shape(self.a_r))
+            # Execute this load data step in simulator_lqr #############################################################
+            # # Choose valfunc and ctrl (beta_r, a_r)
+            # # Configure path
+            # if self.scenario == "intersection":
+            #     self.valfunc_path = self.data_path + "bicycle4d_brs_intersection_t_3.00.npy"
+            #     self.beta_r_path = self.data_path + "bicycle4d_intersection_ctrl_beta_t_3.00.npy"
+            #     self.a_r_path = self.data_path + "bicycle4d_intersection_ctrl_acc_t_3.00.npy"
+            #
+            # elif self.scenario == "roundabout":
+            #     self.valfunc_path = self.data_path + "bicycle4d_brs_roundabout_t_3.00.npy"
+            #     self.beta_r_path = self.data_path + "bicycle4d_roundabout_ctrl_beta_t_3.00.npy"
+            #     self.a_r_path = self.data_path + "bicycle4d_roundabout_ctrl_acc_t_3.00.npy"
+            #
+            # # Previous interpolation
+            # self.valfunc = np.load(self.valfunc_path)
+            # self.beta_r = np.load(self.beta_r_path)
+            # self.a_r = np.load(self.a_r_path)
 
             # Interpolation
             self.curr_valfunc = self.interpolate(self.valfunc, self.robot_curr_states)
             self.curr_optctrl_beta_r = self.interpolate(self.beta_r, self.robot_curr_states)
             self.curr_optctrl_a_r = self.interpolate(self.a_r, self.robot_curr_states)
-            # print("current value function is", self.curr_valfunc)
-            # print("current beta_r", self.curr_optctrl_beta_r)
-            # print("current a_r", self.curr_optctrl_a_r)
 
         else:
             print("the robot states is outside of computation range!")
@@ -88,9 +90,6 @@ class OptimalControlBicycle4D(object):
             self.curr_valfunc = 100
             self.curr_optctrl_beta_r = 0
             self.curr_optctrl_a_r = 0
-            # print("current value function is", self.curr_valfunc)
-            # print("current beta_r", self.curr_optctrl_beta_r)
-            # print("current a_r", self.curr_optctrl_a_r)
 
         return self.robot_curr_states, self.curr_valfunc, self.curr_optctrl_beta_r, self.curr_optctrl_a_r
 

@@ -89,6 +89,8 @@ class OptimalControlRelDyn5D(object):
             self.curr_valfunc = self.interpolate(self.valfunc, self.rel_states)
             self.curr_optctrl_beta_r = self.interpolate(self.beta_r, self.rel_states)
             self.curr_optctrl_a_r = self.interpolate(self.a_r, self.rel_states)
+            end_time = time.time()
+
             # print("current value function is", self.curr_valfunc)
             # print("current beta_r", self.curr_optctrl_beta_r)
             # print("current a_r", self.curr_optctrl_a_r)
