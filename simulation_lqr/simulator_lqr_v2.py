@@ -182,7 +182,8 @@ class SimulatorLQRV2(SimulatorLQRHelper):
                 plt.plot(x_h_list, y_h_list, "-r", label="human trajectory")
                 plt.plot(x_r_list[-1], y_r_list[-1], "xg", label="robot pos")
                 plt.plot(x_h_list[-1], y_h_list[-1], "xr", label="human pos")
-                plt.plot(reachable_set_coordinate[0, :], reachable_set_coordinate[1, :], "y")
+                if self.use_safe_control:
+                    plt.plot(reachable_set_coordinate[0, :], reachable_set_coordinate[1, :], "y")
                 # plt.plot(cx[target_ind], cy[target_ind], "xg", label="target")
                 if self.scenario == "intersection":
                     plt.scatter(self.intersection_curbs[0], self.intersection_curbs[1], color='black', linewidths=0.03)
@@ -190,7 +191,8 @@ class SimulatorLQRV2(SimulatorLQRHelper):
                     plt.scatter(self.roundabout_curbs[0], self.roundabout_curbs[1], color='black', linewidths=0.03)
                 plt.axis("equal")
                 plt.grid(True)
-                plt.title("robot car speed (m/s):" + str(round(RobotCar.v, 2)) + ", max deviation:" + str(round(max_deviation, 2)) + ", min distance:" + str(round(min_dist, 2)))
+                plt.title("v_r (m/s):" + str(round(RobotCar.v, 2)) + ", max deviation:" + str(round(max_deviation, 2)) +
+                          ", min distance:" + str(round(min_dist, 2)) + ", use pred:" + str(self.use_prediction))
                 plt.pause(0.0001)
 
             if self.save_plot:
@@ -226,11 +228,11 @@ class SimulatorLQRV2(SimulatorLQRHelper):
             save_dir = self.fig_save_dir
             if self.use_safe_control:
                 if self.use_prediction:
-                    file_name = self.file_name + "_with_prediction_safe_control.gif"
+                    file_name = self.figure_file_name + "_with_prediction_safe_control.gif"
                 else:
-                    file_name = self.file_name + "_no_prediction_safe_control.gif"
+                    file_name = self.figure_file_name + "_no_prediction_safe_control.gif"
             else:
-                file_name = self.file_name + "_no_safe_control.gif"
+                file_name = self.figure_file_name + "_no_safe_control.gif"
             frames[0].save(
                 save_dir + file_name,
                 format='GIF',
@@ -306,13 +308,14 @@ class SimulatorLQRV2(SimulatorLQRHelper):
         data = {}
         data["avg_max_deviation"] = avg_max_devation
         data["avg_min_distance"] = avg_min_distance
-        data["max_deviation"] = self.max_deviation_list
-        data["min_distance"] = self.min_dist_list
-
-        data["reldyn5d_control_time"] = self.time_use_reldyn5d_control
-        data["bicycle4d_control_time"] = self.time_use_bicycl4d_control
         data["avg_reldyn5d_control_time"] = avg_reldyn5d_control_time
         data["avg_bicycle4d_control_time"] = avg_bicycle4d_control_time
+
+        data["max_deviation"] = self.max_deviation_list
+        data["min_distance"] = self.min_dist_list
+        data["reldyn5d_control_time"] = self.time_use_reldyn5d_control
+        data["bicycle4d_control_time"] = self.time_use_bicycl4d_control
+
 
         if self.use_safe_control:
             if self.use_prediction:
@@ -354,7 +357,7 @@ class SimulatorLQRV2(SimulatorLQRHelper):
         self.save_plot = False
 
         self.fig_save_dir = "/home/anjianl/Desktop/project/optimized_dp/result/simulation/1009/intersection/"
-        self.file_name = "trial_1"
+        self.figure_file_name = "trial_1"
 
         # Choose a trajectory reference
         # # TODO: trial 1
@@ -364,25 +367,43 @@ class SimulatorLQRV2(SimulatorLQRHelper):
         self.robot_target_speed = 2
         robot_start_step = 67
         self.max_t = 11
+        self.statistics_file_name = "h_36_r_20"
+        range_radius = 5
 
+        # # Trial 2 TODO: Good show of our predicion works!
+        # self.huamn_car_file_name_intersection = 'car_36_vid_11.csv'
+        # self.robot_car_file_name_intersection = 'car_52_vid_07_refPath.csv'
+        # self.human_start_step = 170
+        # self.robot_target_speed = 2
+        # # Use full set is even worse than don't use safe control
+        # # self.robot_start_step = 42
+        # # Use safe control is both good
+        # robot_start_step = 48
+        # range_radius = 10
+        # self.statistics_file_name = "h_36_r_52"
+        # self.max_t = 8
 
         # Loop over all options
-        range_radius = 5
-        for use_prediction in [True, False]:
-            # Have a list to store statistics
-            self.min_dist_list = []
-            self.max_deviation_list = []
-            self.time_use_reldyn5d_control = []
-            self.time_use_bicycl4d_control = []
+        for use_safe_control in [True, False]:
+            for use_prediction in [True, False]:
+                # Have a list to store statistics
+                self.min_dist_list = []
+                self.max_deviation_list = []
+                self.time_use_reldyn5d_control = []
+                self.time_use_bicycl4d_control = []
 
-            self.use_prediction = use_prediction
+                self.use_safe_control = use_safe_control
+                self.use_prediction = use_prediction
 
-            for i in range(robot_start_step - range_radius, robot_start_step + range_radius + 1):
-                self.robot_start_step = i
-                self.simulate()
+                if (not self.use_safe_control) and (self.use_prediction):
+                    continue
 
-            # Save data to json file
-            self.save_data_to_json(filename="h_36_r_20")
+                for i in range(robot_start_step - range_radius, robot_start_step + range_radius + 1):
+                    self.robot_start_step = i
+                    self.simulate()
+
+                # Save data to json file
+                self.save_data_to_json(filename=self.statistics_file_name)
 
         return 0
 
