@@ -5,6 +5,7 @@ import os
 import shutil
 import json
 import time
+import pickle
 from PIL import Image
 
 from simulation_lqr.lqr_speed_steer_control import *
@@ -304,73 +305,96 @@ class SimulatorLQRV2(SimulatorLQRHelper):
         print("average reldyn5d control is", avg_reldyn5d_control_time)
         print("average bicycle4d control is", avg_bicycle4d_control_time)
 
+        collision_time = sum(i < 0.5 for i in self.min_dist_list)
+
         # Write statistics to json file #######################################################################
         data = {}
-        data["avg_max_deviation"] = avg_max_devation
-        data["avg_min_distance"] = avg_min_distance
-        data["avg_reldyn5d_control_time"] = avg_reldyn5d_control_time
-        data["avg_bicycle4d_control_time"] = avg_bicycle4d_control_time
+        data['deviation'] = []
+        data['deviation'].append({
+            'avg_max_deviation': avg_max_devation,
+            'up_max_deviation': np.max(self.max_deviation_list),
+            'low_max_deviation': np.min(self.max_deviation_list)
+        })
 
-        data["max_deviation"] = self.max_deviation_list
-        data["min_distance"] = self.min_dist_list
-        data["reldyn5d_control_time"] = self.time_use_reldyn5d_control
-        data["bicycle4d_control_time"] = self.time_use_bicycl4d_control
+        data['distance'] = []
+        data['distance'].append({
+            'avg_min_distance': avg_min_distance,
+            'low_min_distance': np.min(self.min_dist_list)
+        })
 
+        data['safe_control'] = []
+        data['safe_control'].append({
+            'avg_reldyn5d_control_time': avg_reldyn5d_control_time,
+            'avg_bicycle4d_control_time': avg_bicycle4d_control_time
+        })
 
+        data['collision'] = []
+        data['collision'].append({
+            "less_than_0.5": int(collision_time)
+        })
+
+        file_dir = self.statistics_file_dir + '/' + filename + '/'
+        if not os.path.exists(file_dir):
+            os.mkdir(file_dir)
         if self.use_safe_control:
             if self.use_prediction:
-                with open("/home/anjianl/Desktop/project/optimized_dp/result/statistics/1011/simulation/" + filename + "_pred.json",
-                          'w') as outfile:
-                    json.dump(data, outfile)
+                with open(file_dir + filename + "_pred.json", 'w') as outfile:
+                    # json.dump(data, outfile)
+                    str_ = json.dumps(data, indent=4, sort_keys=True, separators=(',', ': '), ensure_ascii=False)
+                    outfile.write(str(str_))
                     print("With prediction statistics saved!")
             else:
-                with open("/home/anjianl/Desktop/project/optimized_dp/result/statistics/1011/simulation/" + filename + "_no_pred.json",
-                          'w') as outfile:
-                    json.dump(data, outfile)
+                with open(file_dir + filename + "_no_pred.json", 'w') as outfile:
+                    # json.dump(data, outfile)
+                    str_ = json.dumps(data, indent=4, sort_keys=True, separators=(',', ': '), ensure_ascii=False)
+                    outfile.write(str(str_))
                     print("no prediction statistics saved!")
         else:
-            with open(
-                    "/home/anjianl/Desktop/project/optimized_dp/result/statistics/1011/simulation/" + filename + "_no_safe_ctrl.json",
-                    'w') as outfile:
-                json.dump(data, outfile)
+            with open(file_dir + filename + "_no_safe_ctrl.json", 'w') as outfile:
+                # json.dump(data, outfile)
+                str_ = json.dumps(data, indent=4, sort_keys=True, separators=(',', ': '), ensure_ascii=False)
+                outfile.write(str(str_))
                 print("no safe control statistics saved!")
+
 
     def main(self):
 
         ###################################################################################################
         ########################### Intersection Scenario #################################################
         # Configure parameters #############################################################################
-        self.scenario = "intersection"
-        # Load value function and control data
-        self.load_safe_data()
-
+        # self.scenario = "intersection"
+        # # Load value function and control data
+        # self.load_safe_data()
+        #
         # self.show_animation = True
-        self.show_animation = False
-
-        # self.use_safe_control = True
-        self.use_safe_control = False
-
-        self.use_prediction = True
-        # self.use_prediction = False
-
-        # self.save_plot = True
-        self.save_plot = False
-
-        self.fig_save_dir = "/home/anjianl/Desktop/project/optimized_dp/result/simulation/1009/intersection/"
-        self.figure_file_name = "trial_1"
+        # # self.show_animation = False
+        #
+        # # self.use_safe_control = True
+        # self.use_safe_control = False
+        #
+        # self.use_prediction = True
+        # # self.use_prediction = False
+        #
+        # # self.save_plot = True
+        # self.save_plot = False
+        #
+        # self.fig_save_dir = "/home/anjianl/Desktop/project/optimized_dp/result/simulation/1009/intersection/"
+        # self.figure_file_name = "trial_1"
+        #
+        # self.statistics_file_dir = "/home/anjianl/Desktop/project/optimized_dp/result/statistics/1012/intersection/"
 
         # Choose a trajectory reference
         # # TODO: trial 1
-        self.huamn_car_file_name_intersection = 'car_36_vid_11.csv'
-        self.robot_car_file_name_intersection = 'car_20_vid_09_refPath.csv'
-        self.human_start_step = 164
-        self.robot_target_speed = 2
-        robot_start_step = 67
-        self.max_t = 11
-        self.statistics_file_name = "h_36_r_20"
-        range_radius = 5
+        # self.huamn_car_file_name_intersection = 'car_36_vid_11.csv'
+        # self.robot_car_file_name_intersection = 'car_20_vid_09_refPath.csv'
+        # self.human_start_step = 164
+        # self.robot_target_speed = 2
+        # robot_start_step = 67
+        # self.max_t = 11
+        # self.statistics_file_name = "h_36_r_20"
+        # range_radius = 5
 
-        # # Trial 2 TODO: Good show of our predicion works!
+        # # TODO: Trial 2  Good show of our predicion works!
         # self.huamn_car_file_name_intersection = 'car_36_vid_11.csv'
         # self.robot_car_file_name_intersection = 'car_52_vid_07_refPath.csv'
         # self.human_start_step = 170
@@ -383,6 +407,63 @@ class SimulatorLQRV2(SimulatorLQRHelper):
         # self.statistics_file_name = "h_36_r_52"
         # self.max_t = 8
 
+        # TODO: trail 3 bad cases, with prediction it has large deviation
+        # self.huamn_car_file_name_intersection = 'car_20_vid_09.csv'
+        # self.robot_car_file_name_intersection = 'car_36_vid_11_refPath.csv'
+        # self.human_start_step = 200
+        # self.robot_target_speed = 2
+        # robot_start_step = 70
+        # self.max_t = 10
+        # self.statistics_file_name = "h_20_r_36"
+        # range_radius = 10
+
+        # TODO: trail 4
+        # self.huamn_car_file_name_intersection = 'car_20_vid_09.csv'
+        # self.robot_car_file_name_intersection = 'car_36_vid_11_refPath.csv'
+        # self.human_start_step = 200
+        # self.robot_target_speed = 5
+        # robot_start_step = 50
+        # self.max_t = 10
+        # self.statistics_file_name = "h_20_r_36_v_5"
+        # range_radius = 10
+
+        ###################################################################################################
+        ########################### Roundabout Scenario #################################################
+        # Configure parameters #############################################################################
+        self.scenario = "roundabout"
+        # Load value function and control data
+        self.load_safe_data()
+
+        self.show_animation = True
+        # self.show_animation = False
+
+        # self.use_safe_control = True
+        self.use_safe_control = False
+
+        self.use_prediction = True
+        # self.use_prediction = False
+
+        # self.save_plot = True
+        self.save_plot = False
+
+        self.fig_save_dir = "/home/anjianl/Desktop/project/optimized_dp/result/simulation/1012/roundabout/"
+        self.figure_file_name = "trial_1"
+
+        self.statistics_file_dir = "/home/anjianl/Desktop/project/optimized_dp/result/statistics/1012/roundabout/"
+
+        # Choose a trajectory reference
+        # # TODO: trial 1
+        self.huamn_car_file_name_roundabout = 'car_41.csv'
+        self.robot_car_file_name_roundabout = 'car_36_refPath.csv'
+        self.human_start_step = 30
+        self.robot_target_speed = 2
+        robot_start_step = 58
+        self.max_t = 10
+        self.statistics_file_name = "h_41_r_36"
+        range_radius = 10
+
+        ###################################################################################################
+        ########################### Simulation over all options #################################################
         # Loop over all options
         for use_safe_control in [True, False]:
             for use_prediction in [True, False]:
