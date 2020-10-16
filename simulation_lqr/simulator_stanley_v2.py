@@ -457,16 +457,16 @@ class SimulatorStanleyV2(SimulatorLQRHelper):
                 self.max_t = 10
                 self.statistics_file_name = "h_41_r_36_stanley"
                 self.range_radius = 10
-            elif trial_name == "trial_2":
-                self.huamn_car_file_name_roundabout = 'car_29.csv'
-                self.robot_car_file_name_roundabout = 'car_30_refPath.csv'
-                self.human_start_step = 0
-                self.robot_target_speed = 2
-                self.curr_robot_start_step = 57
-                self.max_t = 10
-                self.statistics_file_name = "h_29_r_30_stanley"
-                self.range_radius = 10
-            elif trial_name == "trial_3": # TODO: trial 3, bad example
+            # elif trial_name == "trial_2": # TODO: in this trial, the human car jumps! cannot use
+            #     self.huamn_car_file_name_roundabout = 'car_29.csv'
+            #     self.robot_car_file_name_roundabout = 'car_30_refPath.csv'
+            #     self.human_start_step = 0
+            #     self.robot_target_speed = 2
+            #     self.curr_robot_start_step = 57
+            #     self.max_t = 10
+            #     self.statistics_file_name = "h_29_r_30_stanley"
+            #     self.range_radius = 10
+            elif trial_name == "trial_3":
                 self.huamn_car_file_name_roundabout = 'car_24.csv'
                 self.robot_car_file_name_roundabout = 'car_6_refPath.csv'
                 self.human_start_step = 31
@@ -475,7 +475,15 @@ class SimulatorStanleyV2(SimulatorLQRHelper):
                 self.max_t = 10
                 self.statistics_file_name = "h_24_r_6_stanley"
                 self.range_radius = 10
-
+            elif trial_name == "trial_4":
+                self.huamn_car_file_name_roundabout = 'car_30.csv'
+                self.robot_car_file_name_roundabout = 'car_29_refPath.csv'
+                self.human_start_step = 40
+                self.robot_target_speed = 2
+                self.curr_robot_start_step = 50
+                self.max_t = 10
+                self.statistics_file_name = "h_30_r_29_stanley"
+                self.range_radius = 10
 
     def main(self):
 
@@ -484,7 +492,8 @@ class SimulatorStanleyV2(SimulatorLQRHelper):
         ###################################################################################################
         ########################### Simulation over all options #################################################
         # Loop over all options
-        for scenario in ["intersection", "roundabout"]:
+        # for scenario in ["intersection", "roundabout"]:
+        for scenario in ["roundabout"]:
             # Configure scenario and load data
             if scenario == "intersection":
                 self.scenario = "intersection"
@@ -494,7 +503,8 @@ class SimulatorStanleyV2(SimulatorLQRHelper):
                 self.load_safe_data()
 
             # Loop over different trial and conditions
-            for trial in ["trial_1", "trial_2", "trial_3"]:
+            # for trial in ["trial_1", "trial_2", "trial_3"]:
+            for trial in ["trial_4"]:
                 # Reset trial trajectory file
                 self.reset_trial(trial_name=trial, scenario=scenario)
 
