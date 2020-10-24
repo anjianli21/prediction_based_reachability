@@ -387,32 +387,32 @@ class SimulatorStanleyV2(SimulatorLQRHelper):
         # reset parameters ##############################################################################################
         if scenario == "intersection":
 
-            # self.show_animation = True
-            self.show_animation = False
+            self.show_animation = True
+            # self.show_animation = False
 
-            # self.save_plot = True
-            self.save_plot = False
-            self.fig_save_dir = "/home/anjianl/Desktop/project/optimized_dp/result/simulation/1013/intersection/"
-            self.figure_file_name = "trial_1"
+            self.save_plot = True
+            # self.save_plot = False
+            self.fig_save_dir = "/home/anjianl/Desktop/project/optimized_dp/result/simulation/1024/intersection/"
+            self.figure_file_name = "plot_trial"
 
             # Save statistics
-            self.save_statistics = True
-            # self.save_statistics = False
+            # self.save_statistics = True
+            self.save_statistics = False
             self.statistics_file_dir = "/home/anjianl/Desktop/project/optimized_dp/result/statistics/1013/intersection/"
 
         elif scenario == "roundabout":
 
-            # self.show_animation = True
-            self.show_animation = False
+            self.show_animation = True
+            # self.show_animation = False
 
-            # self.save_plot = True
-            self.save_plot = False
-            self.fig_save_dir = "/home/anjianl/Desktop/project/optimized_dp/result/simulation/1013/roundabout/"
-            self.figure_file_name = "trial_1"
+            self.save_plot = True
+            # self.save_plot = False
+            self.fig_save_dir = "/home/anjianl/Desktop/project/optimized_dp/result/simulation/1024/roundabout/"
+            self.figure_file_name = "plot_trial"
 
             # Save statistics
-            self.save_statistics = True
-            # self.save_statistics = False
+            # self.save_statistics = True
+            self.save_statistics = False
             self.statistics_file_dir = "/home/anjianl/Desktop/project/optimized_dp/result/statistics/1013/roundabout/"
 
         # reset trial trajectory ##############################################################################################
@@ -447,6 +447,16 @@ class SimulatorStanleyV2(SimulatorLQRHelper):
                 self.max_t = 10
                 self.statistics_file_name = "h_20_r_36_stanley"
                 self.range_radius = 10
+            elif trial_name == "plot_trial_1":
+                self.huamn_car_file_name_intersection = 'car_36_vid_11.csv'
+                self.robot_car_file_name_intersection = 'car_52_vid_07_refPath.csv'
+                self.human_start_step = 170
+                self.robot_target_speed = 2
+                self.curr_robot_start_step = 42
+                self.range_radius = 1
+                self.statistics_file_name = "h_36_r_52_stanley"
+                self.max_t = 10
+
         elif scenario == "roundabout":
             if trial_name == "trial_1":
                 self.huamn_car_file_name_roundabout = 'car_41.csv'
@@ -484,6 +494,15 @@ class SimulatorStanleyV2(SimulatorLQRHelper):
                 self.max_t = 10
                 self.statistics_file_name = "h_30_r_29_stanley"
                 self.range_radius = 10
+            elif trial_name == "plot_trial_1":
+                self.huamn_car_file_name_roundabout = 'car_41.csv'
+                self.robot_car_file_name_roundabout = 'car_36_refPath.csv'
+                self.human_start_step = 30
+                self.robot_target_speed = 2
+                self.curr_robot_start_step = 58
+                self.max_t = 10
+                self.statistics_file_name = "h_41_r_36_stanley"
+                self.range_radius = 1
 
     def main(self):
 
@@ -493,7 +512,8 @@ class SimulatorStanleyV2(SimulatorLQRHelper):
         ########################### Simulation over all options #################################################
         # Loop over all options
         # for scenario in ["intersection", "roundabout"]:
-        for scenario in ["roundabout"]:
+        for scenario in ["intersection"]:
+        # for scenario in ["roundabout"]:
             # Configure scenario and load data
             if scenario == "intersection":
                 self.scenario = "intersection"
@@ -504,12 +524,14 @@ class SimulatorStanleyV2(SimulatorLQRHelper):
 
             # Loop over different trial and conditions
             # for trial in ["trial_1", "trial_2", "trial_3"]:
-            for trial in ["trial_4"]:
+            for trial in ["plot_trial_1"]:
                 # Reset trial trajectory file
                 self.reset_trial(trial_name=trial, scenario=scenario)
 
-                for use_safe_control in [True, False]:
-                    for use_prediction in [True, False]:
+                # for use_safe_control in [True, False]:
+                for use_safe_control in [True]:
+                    # for use_prediction in [True, False]:
+                    for use_prediction in [True]:
 
                         # Have a list to store statistics
                         self.min_dist_list = []
@@ -526,9 +548,14 @@ class SimulatorStanleyV2(SimulatorLQRHelper):
                         if (not self.use_safe_control) and (self.use_prediction):
                             continue
 
-                        for i in range(self.curr_robot_start_step - self.range_radius, self.curr_robot_start_step + self.range_radius + 1):
-                            self.robot_start_step = i
-                            self.simulate()
+                        # # For statistics, several start positions
+                        # for i in range(self.curr_robot_start_step - self.range_radius, self.curr_robot_start_step + self.range_radius + 1):
+                        #     self.robot_start_step = i
+                        #     self.simulate()
+
+                        # # For single start positions
+                        self.robot_start_step = self.curr_robot_start_step
+                        self.simulate()
 
                         # Save data to json file
                         if self.save_statistics:
