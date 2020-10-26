@@ -25,7 +25,8 @@ class PlotTrajectory(object):
         self.car_length = 2.8
         self.car_width = 1
 
-        self.save_plot = False
+        # self.save_plot = False
+        self.save_plot = True
 
     def main(self):
 
@@ -85,6 +86,7 @@ class PlotTrajectory(object):
             fig.suptitle("time: {:.1f}s".format(self.robot_traj_pred["t"][i]))
             axes.set_xlabel('x position (m)')
             axes.set_ylabel('y position (m)')
+            axes.margins(-0.2, -0.2) # zoom in a bit
 
             plt.axis("equal")
             # plt.grid(True)
@@ -92,23 +94,25 @@ class PlotTrajectory(object):
 
             if self.save_plot:
                 if self.scenario == "intersection":
-                    folder_path = "/home/anjianl/Desktop/project/optimized_dp/result/plot_trajectory/intersection/plots"
+                    folder_path = "/home/anjianl/Desktop/project/optimized_dp/result/plot_trajectory/intersection/plots2"
                 else:
-                    folder_path = "/home/anjianl/Desktop/project/optimized_dp/result/plot_trajectory/roundabout/plots"
+                    folder_path = "/home/anjianl/Desktop/project/optimized_dp/result/plot_trajectory/roundabout/plots2"
                 plt.savefig(folder_path + "/3_cars/t_{:.2f}.png".format(self.human_traj["t"][i]))
+                print("trajectory shots are saved!")
 
         plt.subplots(1)
-        plt.plot(self.robot_traj_pred["t"], self.robot_traj_pred["v_r"], label="with prediction")
-        plt.plot(self.robot_traj_nopred["t"], self.robot_traj_nopred["v_r"], label="no prediction")
+        plt.plot(self.robot_traj_pred["t"], self.robot_traj_pred["v_r"], label="Reachability-Pred")
+        plt.plot(self.robot_traj_nopred["t"], self.robot_traj_nopred["v_r"], label="Reachability-NoPred")
         plt.xlabel('time (s)')
         plt.ylabel('speed (m/s)')
 
         plt.legend()
         if self.save_plot:
             plt.savefig(folder_path + "/speed_profiles.png")
+            print("speed profile is saved!")
 
         plt.ioff()
-        plt.show()
+        # plt.show()
 
         return True
 
