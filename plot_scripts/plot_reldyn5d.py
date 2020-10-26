@@ -22,46 +22,27 @@ class PlotReldyn5D(object):
         g = grid(np.array([-15.0, -10.0, -math.pi, -1, -1]), np.array([15.0, 10.0, math.pi, 18, 18]), 5,
                  np.array([61, 41, 24, 39, 39]), [2])
 
-        # # TODO 0909
-        # ctrl_beta_0 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0910/mode-1/reldyn5d_ctrl_beta_mode-1_t_3.00.npy")
-        # ctrl_acc_0 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0910/mode-1/reldyn5d_ctrl_acc_mode-1_t_3.00.npy")
 
         # Set time
         time = 3.0
         # Previous
         # Set the slice parameter, not psi_rel = psi_h - psi_r
-        # psi = 90
+        psi = 45
         # v_h = 6.0
-        # v_r = 0.0
-
-        psi = 0
-        v_h = 6.0
+        v_h = 7.0
         v_r = 2.0
-
-        # Previous
-        # V_0 = np.load(
-        #     "/home/anjianl/Desktop/project/optimized_dp/data/brs/0910/mode0/reldyn5d_brs_mode0_t_{:.2f}.npy".format(time))
-        # V_1 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0910/mode1/reldyn5d_brs_mode1_t_{:.2f}.npy".format(time))
-        # V_2 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0910/mode2/reldyn5d_brs_mode2_t_{:.2f}.npy".format(time))
-        # V_3 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0910/mode3/reldyn5d_brs_mode3_t_{:.2f}.npy".format(time))
-        # V_4 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0910/mode4/reldyn5d_brs_mode4_t_{:.2f}.npy".format(time))
-        # V_5 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0910/mode5/reldyn5d_brs_mode5_t_{:.2f}.npy".format(time))
-        # V_6 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/0910/mode-1/reldyn5d_brs_mode-1_t_{:.2f}.npy".format(time))
+        # v_r = 1.0
 
         V_0 = np.load(
-            "/home/anjianl/Desktop/project/optimized_dp/data/brs/1004/mode-1/reldyn5d_brs_mode-1_t_3.00.npy")
-        V_1 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/1004/mode1/reldyn5d_brs_mode1_t_3.00.npy")
-        V_2 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/1004/mode2/reldyn5d_brs_mode2_t_3.00.npy")
-        V_3 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/1004/mode3/reldyn5d_brs_mode3_t_3.00.npy")
-        V_4 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/1004/mode4/reldyn5d_brs_mode4_t_3.00.npy")
-        V_5 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/1004/mode5/reldyn5d_brs_mode5_t_3.00.npy")
-        V_6 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/1006/mode-1/reldyn5d_brs_mode-1_t_0.00.npy")
+            "/home/anjianl/Desktop/project/optimized_dp/data/brs/1006/mode-1/reldyn5d_brs_mode-1_t_3.00.npy")
+        V_1 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/1006/mode1/reldyn5d_brs_mode1_t_3.00.npy")
+        V_2 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/1006/mode2/reldyn5d_brs_mode2_t_3.00.npy")
+        V_3 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/1006/mode3/reldyn5d_brs_mode3_t_3.00.npy")
+        V_4 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/1006/mode4/reldyn5d_brs_mode4_t_3.00.npy")
+        V_5 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/1006/mode5/reldyn5d_brs_mode5_t_3.00.npy")
+        V_6 = np.load("/home/anjianl/Desktop/project/optimized_dp/data/brs/1006/mode-1/reldyn5d_brs_mode-1_t_3.00.npy")
 
         x_grid, y_grid = self.get_xy_grid(g, [0, 1])
-
-        # psi_index = int((psi + 180) / 10)
-        # v_h_index = int(2 * v_h)
-        # v_r_index = int(2 * v_r)
 
         psi_index = int((psi + 180) / 15)
         v_h_index = int(2 * v_h + 2)
@@ -75,8 +56,6 @@ class PlotReldyn5D(object):
         val_5 = np.squeeze(V_5[:, :, psi_index, v_h_index, v_r_index])
         val_6 = np.squeeze(V_6[:, :, psi_index, v_h_index, v_r_index])
 
-        # ctrl_beta_val_0 = np.squeeze(ctrl_beta_0[:, :, psi_index, v_h_index, v_r_index])
-        # ctrl_acc_val_0 = np.squeeze(ctrl_acc_0[:, :, psi_index, v_h_index, v_r_index])
 
         fig, ax = plt.subplots()
 
@@ -92,7 +71,7 @@ class PlotReldyn5D(object):
         ax.clabel(CS_4, inline=1, fontsize=5)
         CS_5 = ax.contour(x_grid, y_grid, val_5, levels=[0], colors='gold')
         ax.clabel(CS_5, inline=1, fontsize=5)
-        CS_6 = ax.contour(x_grid, y_grid, val_6, levels=[0], colors='red')
+        CS_6 = ax.contour(x_grid, y_grid, val_6, levels=[0.0], colors='red')
         ax.clabel(CS_6, inline=1, fontsize=5)
 
         # lines = [CS_1.collections[0], CS_2.collections[0], CS_3.collections[0], CS_4.collections[0]]
@@ -102,13 +81,13 @@ class PlotReldyn5D(object):
         # labels = ['test1', "test2"]
 
         lines = [CS_0.collections[0], CS_1.collections[0], CS_2.collections[0], CS_3.collections[0], CS_4.collections[0], CS_5.collections[0], CS_6.collections[0]]
-        labels = ['Mode 0: decelerate', 'Mode 1: stable', 'Mode2: acceleration', 'Mode 3: left turn', 'Mode 4: right turn', 'Mode 5: in roundabout', "Mode -1, full range"]
+        labels = ['Mode 0: Deceleration', 'Mode 1: Stable', 'Mode2: Acceleration', 'Mode 3: Left turn', 'Mode 4: Right turn', 'Mode 5: Roundabout', "Mode -1: Others"]
 
         ax.legend(lines, labels)
 
-        ax.set_xlabel("x_relative")
-        ax.set_ylabel("y_relative")
-        ax.set_title('Avoid set: psi_rel = {:d}, v_human = {:.1f}m/s, v_robot = {:.1f}m/s, t = {:.1f}s'.format(psi, v_h, v_r, time))
+        ax.set_xlabel("x_relative (m)")
+        ax.set_ylabel("y_relative (m)")
+        ax.set_title('BRT: psi_rel = {:.1f} rad, v_human = {:.1f} m/s, v_robot = {:.1f} m/s'.format(psi, v_h, v_r))
 
 
         # Plot control

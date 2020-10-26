@@ -24,10 +24,10 @@ class ClusteringV3(object):
 
     def __init__(self):
 
-        # self.to_plot = True
+        self.to_plot = True
         # self.to_save = True
 
-        self.to_plot = False
+        # self.to_plot = False
         self.to_save = False
 
         self.clustering_num = 6
@@ -268,11 +268,11 @@ class ClusteringV3(object):
             ax.scatter(raw_data[:, 0][roundabout_prediction_index], raw_data[:, 2][roundabout_prediction_index], label='M%d, r' % i, marker="+", color=color[i])
 
 
-        ax.set_xlabel('acceleration')
-        ax.set_ylabel('angular_speed')
+        ax.set_xlabel('acceleration (m/s^2)')
+        ax.set_ylabel('angular speed (rad/s)')
         title = self.use_velocity + ", " + self.scenario_name + ", " + self.clustering_feature_type + ", " + str(self.time_span) + " " + "time-span " + "poly" + str(ProcessPredictionV3().degree)
-        ax.set_title(title)
-        ax.legend()
+        # ax.set_title(title)
+        ax.legend(fontsize=8)
         if self.to_plot:
             plt.show()
 
@@ -287,9 +287,10 @@ class ClusteringV3(object):
         figure_path_name = file_path + figure_name
 
         if self.to_save:
-            if not os.path.exists(file_path):
-                os.mkdir(file_path)
-            plt.savefig(figure_path_name)
+            # if not os.path.exists(file_path):
+            #     os.mkdir(file_path)
+            # plt.savefig(figure_path_name)
+            plt.savefig("/home/anjianl/Desktop/project/optimized_dp/result/clustering/clustering.png")
 
         # pickle.dump(kmeans_action, open("/home/anjianl/Desktop/project/optimized_dp/model/kmeans_action_intersection"
         #                                 ".pkl", "wb"))

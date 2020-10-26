@@ -18,7 +18,7 @@ from plot_utils import map_vis_lanelet2
 from plot_utils import tracks_vis
 from plot_utils import dict_utils
 
-class PlotTrajectory(object):
+class PlotTrajShade(object):
 
     def __init__(self):
 
@@ -53,49 +53,48 @@ class PlotTrajectory(object):
             lanelet_map_file = "/home/anjianl/Desktop/project/optimized_dp/data/map/osm/DR_USA_Roundabout_FT.osm"
 
         ######################################### Main loop #########################################################################
-
+        time_step = 0
         for i in range(len(self.human_traj["t"])):
 
-            plt.cla()
-            map_vis_without_lanelet.draw_map_without_lanelet(lanelet_map_file, axes, lat_origin, lon_origin)
-            axes.plot(self.human_traj["x_h"][:i], self.human_traj["y_h"][:i], "-r", label="human trajectory", linewidth=0.5)
-            axes.plot(self.robot_traj_pred["x_r"][:i], self.robot_traj_pred["y_r"][:i], "-b", label="robot trajectory prediction", linewidth=0.5)  # with prediction
-            axes.plot(self.robot_traj_nopred["x_r"][:i], self.robot_traj_nopred["y_r"][:i], "-g", label="robot trajectory no prediction", linewidth=0.5)  # no prediction
-            # plt.plot(cx, cy, ".c", label="course")
+            if time_step % 5 == 0:
 
-            robot_pred_rect = matplotlib.patches.Polygon(self.polygon_xy_from_motionstate(x=self.robot_traj_pred["x_r"][i],
-                                                                               y=self.robot_traj_pred["y_r"][i],
-                                                                               psi=self.robot_traj_pred["psi_r"][i],
-                                                                               width=self.car_width, length=self.car_length), closed=True, zorder=20, color="blue")
-            robot_nopred_rect = matplotlib.patches.Polygon(
-                self.polygon_xy_from_motionstate(x=self.robot_traj_nopred["x_r"][i],
-                                                 y=self.robot_traj_nopred["y_r"][i],
-                                                 psi=self.robot_traj_nopred["psi_r"][i],
-                                                 width=self.car_width, length=self.car_length), closed=True, zorder=20, color="green")
-            human_rect = matplotlib.patches.Polygon(self.polygon_xy_from_motionstate(x=self.human_traj["x_h"][i],
-                                                                                     y=self.human_traj["y_h"][i],
-                                                                                     psi=self.human_traj["psi_h"][i],
-                                                                                     width=self.car_width,
-                                                                                     length=self.car_length),
-                                                    closed=True, zorder=20, color="red")
-            axes.add_patch(robot_pred_rect)
-            axes.add_patch(robot_nopred_rect)
-            axes.add_patch(human_rect)
+                map_vis_without_lanelet.draw_map_without_lanelet(lanelet_map_file, axes, lat_origin, lon_origin)
 
-            fig.suptitle("time: {:.1f}s".format(self.robot_traj_pred["t"][i]))
-            axes.set_xlabel('x position (m)')
-            axes.set_ylabel('y position (m)')
+                robot_pred_rect = matplotlib.patches.Polygon(self.polygon_xy_from_motionstate(x=self.robot_traj_pred["x_r"][i],
+                                                                                   y=self.robot_traj_pred["y_r"][i],
+                                                                                   psi=self.robot_traj_pred["psi_r"][i],
+                                                                                   width=self.car_width, length=self.car_length), closed=True, zorder=20, color="blue", alpha=100 - time_step * 5)
+                robot_nopred_rect = matplotlib.patches.Polygon(
+                    self.polygon_xy_from_motionstate(x=self.robot_traj_nopred["x_r"][i],
+                                                     y=self.robot_traj_nopred["y_r"][i],
+                                                     psi=self.robot_traj_nopred["psi_r"][i],
+                                                     width=self.car_width, length=self.car_length), closed=True, zorder=20, color="green")
+                human_rect = matplotlib.patches.Polygon(self.polygon_xy_from_motionstate(x=self.human_traj["x_h"][i],
+                                                                                         y=self.human_traj["y_h"][i],
+                                                                                         psi=self.human_traj["psi_h"][i],
+                                                                                         width=self.car_width,
+                                                                                         length=self.car_length),
+                                                                                         closed=True, zorder=20, color="red", alpha=100 - time_step * 5)
+                axes.add_patch(robot_pred_rect)
+                axes.add_patch(robot_nopred_rect)
+                axes.add_patch(human_rect)
 
-            plt.axis("equal")
-            # plt.grid(True)
-            plt.pause(0.001)
+                fig.suptitle("time: {:.1f}s".format(self.robot_traj_pred["t"][i]))
+                axes.set_xlabel('x position (m)')
+                axes.set_ylabel('y position (m)')
 
-            if self.save_plot:
-                if self.scenario == "intersection":
-                    folder_path = "/home/anjianl/Desktop/project/optimized_dp/result/plot_trajectory/intersection/plots"
-                else:
-                    folder_path = "/home/anjianl/Desktop/project/optimized_dp/result/plot_trajectory/roundabout/plots"
-                plt.savefig(folder_path + "/3_cars/t_{:.2f}.png".format(self.human_traj["t"][i]))
+                plt.axis("equal")
+                # plt.grid(True)
+                plt.pause(0.2)
+
+                if self.save_plot:
+                    if self.scenario == "intersection":
+                        folder_path = "/home/anjianl/Desktop/project/optimized_dp/result/plot_trajectory/intersection/plots"
+                    else:
+                        folder_path = "/home/anjianl/Desktop/project/optimized_dp/result/plot_trajectory/roundabout/plots"
+                    plt.savefig(folder_path + "/3_cars/t_{:.2f}.png".format(self.human_traj["t"][i]))
+
+            time_step += 1
 
         plt.subplots(1)
         plt.plot(self.robot_traj_pred["t"], self.robot_traj_pred["v_r"], label="with prediction")
@@ -151,4 +150,4 @@ class PlotTrajectory(object):
 
 
 if __name__ == "__main__":
-    PlotTrajectory().main()
+    PlotTrajShade().main()
