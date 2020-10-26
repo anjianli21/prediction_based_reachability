@@ -8,6 +8,9 @@ import time
 import pickle
 import math
 from PIL import Image
+import csv
+
+from matplotlib.patches import Polygon
 
 from simulation_lqr.stanley_control import *
 from simulation_lqr.simulator_lqr_helper import SimulatorLQRHelper
@@ -203,6 +206,56 @@ class SimulatorStanleyV2(SimulatorLQRHelper):
 
             end_time = time.time()
             print("this step takes", end_time - start_time, "s")
+
+        # Save trajectory ##########################################################################################################
+        if self.save_trajectory:
+            robot_traj = {}
+            robot_traj["x_r"] = x_r_list
+            robot_traj["y_r"] = y_r_list
+            robot_traj["psi_r"] = psi_r_list
+            robot_traj["v_r"] = v_r_list
+            robot_traj["t"] = t_list
+
+            if self.use_safe_control and self.use_prediction:
+                if self.scenario == "intersection":
+                    output_robot = open("/home/anjianl/Desktop/project/optimized_dp/result/plot_trajectory/intersection/2/pred_robot.csv", 'wb')
+                elif self.scenario == "roundabout":
+                    output_robot = open("/home/anjianl/Desktop/project/optimized_dp/result/plot_trajectory/roundabout/2/pred_robot.csv", 'wb')
+            elif self.use_safe_control and not self.use_prediction:
+                if self.scenario == "intersection":
+                    output_robot = open(
+                        "/home/anjianl/Desktop/project/optimized_dp/result/plot_trajectory/intersection/2/nopred_robot.csv", 'wb')
+                elif self.scenario == "roundabout":
+                    output_robot = open(
+                        "/home/anjianl/Desktop/project/optimized_dp/result/plot_trajectory/roundabout/2/nopred_robot.csv",
+                        'wb')
+
+            pickle.dump(robot_traj, output_robot)
+            output_robot.close()
+            print("robot trajectory saved!")
+
+            human_traj = {}
+            human_traj["x_h"] = x_h_list
+            human_traj["y_h"] = y_h_list
+            human_traj["psi_h"] = psi_h_list
+            human_traj["v_h"] = v_h_list
+            human_traj["t"] = t_list
+
+            if self.use_safe_control and self.use_prediction:
+                if self.scenario == "intersection":
+                    output_human = open("/home/anjianl/Desktop/project/optimized_dp/result/plot_trajectory/intersection/2/pred_human.csv", 'wb')
+                elif self.scenario == "roundabout":
+                    output_human = open("/home/anjianl/Desktop/project/optimized_dp/result/plot_trajectory/roundabout/2/pred_human.csv", 'wb')
+            elif self.use_safe_control and not self.use_prediction:
+                if self.scenario == "intersection":
+                    output_human = open(
+                        "/home/anjianl/Desktop/project/optimized_dp/result/plot_trajectory/intersection/2/nopred_human.csv", 'wb')
+                elif self.scenario == "roundabout":
+                    output_human = open(
+                        "/home/anjianl/Desktop/project/optimized_dp/result/plot_trajectory/roundabout/2/nopred_human.csv", 'wb')
+            pickle.dump(human_traj, output_human)
+            output_human.close()
+            print("human trajectory saved!")
 
         # Save statistics ###########################################################################################################
         print("this episode finishes!")
@@ -400,6 +453,8 @@ class SimulatorStanleyV2(SimulatorLQRHelper):
             self.save_statistics = False
             self.statistics_file_dir = "/home/anjianl/Desktop/project/optimized_dp/result/statistics/1013/intersection/"
 
+            self.save_trajectory = False
+
         elif scenario == "roundabout":
 
             self.show_animation = True
@@ -414,6 +469,8 @@ class SimulatorStanleyV2(SimulatorLQRHelper):
             # self.save_statistics = True
             self.save_statistics = False
             self.statistics_file_dir = "/home/anjianl/Desktop/project/optimized_dp/result/statistics/1013/roundabout/"
+
+            self.save_trajectory = False
 
         # reset trial trajectory ##############################################################################################
         if scenario == "intersection":
@@ -448,6 +505,15 @@ class SimulatorStanleyV2(SimulatorLQRHelper):
                 self.statistics_file_name = "h_20_r_36_stanley"
                 self.range_radius = 10
             elif trial_name == "plot_trial_1":
+                self.huamn_car_file_name_intersection = 'car_36_vid_11.csv'
+                self.robot_car_file_name_intersection = 'car_52_vid_07_refPath.csv'
+                self.human_start_step = 170
+                self.robot_target_speed = 2
+                self.curr_robot_start_step = 42
+                self.range_radius = 1
+                self.statistics_file_name = "h_36_r_52_stanley"
+                self.max_t = 10
+            elif trial_name == "plot_trial_2":
                 self.huamn_car_file_name_intersection = 'car_36_vid_11.csv'
                 self.robot_car_file_name_intersection = 'car_52_vid_07_refPath.csv'
                 self.human_start_step = 170
@@ -503,6 +569,15 @@ class SimulatorStanleyV2(SimulatorLQRHelper):
                 self.max_t = 10
                 self.statistics_file_name = "h_41_r_36_stanley"
                 self.range_radius = 1
+            elif trial_name == "plot_trial_2":
+                self.huamn_car_file_name_roundabout = 'car_41.csv'
+                self.robot_car_file_name_roundabout = 'car_36_refPath.csv'
+                self.human_start_step = 30
+                self.robot_target_speed = 2
+                self.curr_robot_start_step = 65
+                self.max_t = 10
+                self.statistics_file_name = "h_41_r_36_stanley"
+                self.range_radius = 1
 
     def main(self):
 
@@ -524,14 +599,15 @@ class SimulatorStanleyV2(SimulatorLQRHelper):
 
             # Loop over different trial and conditions
             # for trial in ["trial_1", "trial_2", "trial_3"]:
-            for trial in ["plot_trial_1"]:
+            # for trial in ["plot_trial_1"]:
+            for trial in ["plot_trial_2"]:
                 # Reset trial trajectory file
                 self.reset_trial(trial_name=trial, scenario=scenario)
 
                 # for use_safe_control in [True, False]:
                 for use_safe_control in [True]:
                     # for use_prediction in [True, False]:
-                    for use_prediction in [True]:
+                    for use_prediction in [True, False]:
 
                         # Have a list to store statistics
                         self.min_dist_list = []
