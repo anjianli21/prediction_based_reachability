@@ -453,7 +453,8 @@ class SimulatorStanleyV2(SimulatorLQRHelper):
             self.save_statistics = False
             self.statistics_file_dir = "/home/anjianl/Desktop/project/optimized_dp/result/statistics/1013/intersection/"
 
-            self.save_trajectory = False
+            self.save_trajectory = True
+            # self.save_trajectory = False
 
         elif scenario == "roundabout":
 
@@ -518,7 +519,7 @@ class SimulatorStanleyV2(SimulatorLQRHelper):
                 self.robot_car_file_name_intersection = 'car_52_vid_07_refPath.csv'
                 self.human_start_step = 170
                 self.robot_target_speed = 2
-                self.curr_robot_start_step = 42
+                self.curr_robot_start_step = 43
                 self.range_radius = 1
                 self.statistics_file_name = "h_36_r_52_stanley"
                 self.max_t = 10

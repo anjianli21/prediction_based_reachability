@@ -8,6 +8,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import os
 import pickle
+import argparse
 
 from matplotlib.widgets import Button
 
@@ -21,16 +22,19 @@ class PlotTrajectory(object):
 
     def __init__(self):
 
-        # self.use_prediction = True
-        # self.use_prediction = False
-
-        # self.scenario = "roundabout"
-        self.scenario = "intersection"
-
         self.car_length = 2.8
         self.car_width = 1
 
     def main(self):
+
+        # Input scenario name
+        parser = argparse.ArgumentParser()
+        parser.add_argument("scenario_name", type=str,
+                            help="Name of the scenario (to identify map and folder for track "
+                                 "files)", nargs="?")
+        args = parser.parse_args()
+
+        self.scenario = args.scenario_name
 
         self.load_data()
 
@@ -76,9 +80,28 @@ class PlotTrajectory(object):
             axes.add_patch(robot_nopred_rect)
             axes.add_patch(human_rect)
 
+            fig.suptitle("time: {:.1f}s".format(self.robot_traj_pred["t"][i]))
+            axes.set_xlabel('x position (m)')
+            axes.set_ylabel('y position (m)')
+
             plt.axis("equal")
-            plt.grid(True)
+            # plt.grid(True)
             plt.pause(0.001)
+
+            if self.scenario == "intersection":
+                folder_path = "/home/anjianl/Desktop/project/optimized_dp/result/plot_trajectory/intersection/plots"
+            else:
+                folder_path = "/home/anjianl/Desktop/project/optimized_dp/result/plot_trajectory/roundabout/plots"
+            plt.savefig(folder_path + "/3_cars/t_{:.2f}.png".format(self.human_traj["t"][i]))
+
+        plt.subplots(1)
+        plt.plot(self.robot_traj_pred["t"], self.robot_traj_pred["v_r"], label="with prediction")
+        plt.plot(self.robot_traj_nopred["t"], self.robot_traj_nopred["v_r"], label="no prediction")
+        plt.xlabel('time (s)')
+        plt.ylabel('speed (m/s)')
+
+        plt.legend()
+        plt.savefig(folder_path + "/speed_profiles.png")
 
         plt.ioff()
         plt.show()
