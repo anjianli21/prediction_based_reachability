@@ -87,7 +87,7 @@ class PlotReldyn5D(object):
 
         ax.set_xlabel("x_relative (m)")
         ax.set_ylabel("y_relative (m)")
-        ax.set_title('BRT: psi_rel = {:.1f} rad, v_human = {:.1f} m/s, v_robot = {:.1f} m/s'.format(psi, v_h, v_r))
+        ax.set_title('BRT: psi_rel = ' + '$\pi$/4' + ' , v_human = {:.1f} m/s, v_robot = {:.1f} m/s'.format(v_h, v_r))
 
 
         # Plot control
