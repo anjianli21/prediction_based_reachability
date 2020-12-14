@@ -45,7 +45,7 @@ rest of the code
 
 ## Trajectory processing, driving mode clustering and mode prediction
 
-First, configure data path in "def __init__(self): " in both process_prediction.py and predict_mode.py.
+First, configure the data path in "def __init__(self): " in both process_prediction.py and predict_mode.py.
 
 1. Process the predicted trajectory data and obtain actions:
 ```
