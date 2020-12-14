@@ -6,7 +6,7 @@ import os
 
 from computeGraphs.CustomGraphFunctions import *
 from Plots.plotting_utilities import *
-from user_definer import *
+from user_definer_reldyn5d import *
 from argparse import ArgumentParser
 from computeGraphs.graph_4D import *
 from computeGraphs.graph_5D import *
@@ -17,9 +17,9 @@ import matplotlib.pyplot as plt
 
 import math
 
-from prediction.clustering_v3 import ClusteringV3
-from prediction.process_prediction_v3 import ProcessPredictionV3
-from prediction.predict_mode_v3 import PredictModeV3
+from prediction.clustering import Clustering
+from prediction.process_prediction import ProcessPrediction
+from prediction.predict_mode import PredictMode
 
 def main():
     ################### PARSING ARGUMENTS FROM USERS #####################

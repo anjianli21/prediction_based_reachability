@@ -6,7 +6,7 @@ import os
 
 from computeGraphs.CustomGraphFunctions import *
 from Plots.plotting_utilities import *
-from user_definer import *
+from user_definer_bicycle4d import *
 from argparse import ArgumentParser
 from computeGraphs.graph_4D import *
 from computeGraphs.graph_5D import *

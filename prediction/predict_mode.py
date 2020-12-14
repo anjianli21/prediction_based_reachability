@@ -18,11 +18,11 @@ class PredictMode(object):
 
     def __init__(self):
 
-        self.to_plot_pred_mode = True
+        self.to_plot_pred_mode = False
 
         self.to_save_pred_mode = False
 
-        self.plot_probability = True
+        self.plot_probability = False
 
         # Which scenario to predict
         self.scenario_predict = "intersection"
@@ -44,7 +44,6 @@ class PredictMode(object):
 
         # File name
         if self.scenario_predict == "intersection":
-            # self.file_name_predict = ['car_16_vid_09.csv']
             self.file_name_predict = ['car_16_vid_09.csv', 'car_20_vid_09.csv', 'car_29_vid_09.csv',
                                       'car_36_vid_11.csv', 'car_50_vid_03.csv', 'car_112_vid_11.csv',
                                       'car_122_vid_11.csv',
