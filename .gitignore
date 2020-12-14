@@ -1,8 +1,6 @@
 # Ignore the following files
 *.pyc
 *.png
-*.npy
 /result
 /data/brs
-/data/intersection-data-psi
-/data/roundabout-data-psi
+/data/map/value_function
