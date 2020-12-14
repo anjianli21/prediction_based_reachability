@@ -1,6 +1,5 @@
 import sys
 sys.path.append("/home/anjianl/Desktop/project/optimized_dp/")
-import pandas
 import os
 import shutil
 import json
@@ -8,28 +7,20 @@ import time
 import pickle
 import math
 from PIL import Image
-import csv
 
-from matplotlib.patches import Polygon
+from simulation_stanley.stanley_control import *
+from simulation_stanley.simulator_stanley_helper import SimulatorStanleyHelper
+from simulation_stanley.human_car import HumanState
+from simulation_stanley.optimal_control_reldyn5d import OptimalControlRelDyn5D
+from simulation_stanley.optimal_control_bicycle4d import OptimalControlBicycle4D
 
-from simulation_lqr.stanley_control import *
-from simulation_lqr.simulator_lqr_helper import SimulatorLQRHelper
-from simulation_lqr.human_car import HumanState
-from simulation_lqr.optimal_control_reldyn5d import OptimalControlRelDyn5D
-from simulation_lqr.optimal_control_bicycle4d import OptimalControlBicycle4D
-
-class SimulatorStanleyV2(SimulatorLQRHelper):
+class SimulatorStanley(SimulatorStanleyHelper):
 
     def __init__(self):
-        super(SimulatorStanleyV2, self).__init__()
+        super(SimulatorStanley, self).__init__()
 
-        # Update frequency for the prediction, dt = 0.1s
-        self.mode_predict_span = 1
-        # When making prediction, choose trajectory over some episode
-        self.episode_len = 12
-
-        self.intersection_curbs = np.load("/home/anjianl/Desktop/project/optimized_dp/data/map/obstacle_map/intersection_curbs.npy")
-        self.roundabout_curbs = np.load("/home/anjianl/Desktop/project/optimized_dp/data/map/obstacle_map/roundabout_curbs.npy")
+        self.mode_predict_span = 1  # Update frequency for the prediction, when mode_predict_span = 1, dt = 0.1s
+        self.episode_len = 12  # When making prediction, choose trajectory over some future episode
 
     def simulate(self):
 
@@ -276,7 +267,6 @@ class SimulatorStanleyV2(SimulatorLQRHelper):
         if self.save_plot:
             # Create the frames
             frames = []
-            # imgs = glob.glob("*.png")
             imgs = []
             for i in np.arange(0.10, curr_t, 0.10):
                 imgs.append(
@@ -446,8 +436,8 @@ class SimulatorStanleyV2(SimulatorLQRHelper):
         # reset parameters ##############################################################################################
         if scenario == "intersection":
 
-            self.show_animation = True
-            # self.show_animation = False
+            # self.show_animation = True
+            self.show_animation = False
 
             # self.save_plot = True
             self.save_plot = False
@@ -459,13 +449,13 @@ class SimulatorStanleyV2(SimulatorLQRHelper):
             self.save_statistics = False
             self.statistics_file_dir = "/home/anjianl/Desktop/project/optimized_dp/result/statistics/1013/intersection/"
 
-            self.save_trajectory = True
-            # self.save_trajectory = False
+            # self.save_trajectory = True
+            self.save_trajectory = False
 
         elif scenario == "roundabout":
 
-            self.show_animation = True
-            # self.show_animation = False
+            # self.show_animation = True
+            self.show_animation = False
 
             # self.save_plot = True
             self.save_plot = False
@@ -477,8 +467,8 @@ class SimulatorStanleyV2(SimulatorLQRHelper):
             self.save_statistics = False
             self.statistics_file_dir = "/home/anjianl/Desktop/project/optimized_dp/result/statistics/1013/roundabout/"
 
-            self.save_trajectory = True
-            # self.save_trajectory = False
+            # self.save_trajectory = True
+            self.save_trajectory = False
 
         # reset trial trajectory ##############################################################################################
         if scenario == "intersection":
@@ -496,9 +486,6 @@ class SimulatorStanleyV2(SimulatorLQRHelper):
                 self.robot_car_file_name_intersection = 'car_52_vid_07_refPath.csv'
                 self.human_start_step = 170
                 self.robot_target_speed = 2
-                # Use full set is even worse than don't use safe control
-                # self.robot_start_step = 42
-                # Use safe control is both good
                 self.curr_robot_start_step = 48
                 self.range_radius = 10
                 self.statistics_file_name = "h_36_r_52_stanley"
@@ -521,15 +508,6 @@ class SimulatorStanleyV2(SimulatorLQRHelper):
                 self.range_radius = 1
                 self.statistics_file_name = "h_36_r_52_stanley"
                 self.max_t = 10
-            # elif trial_name == "plot_trial_2":
-            #     self.huamn_car_file_name_intersection = 'car_36_vid_11.csv'
-            #     self.robot_car_file_name_intersection = 'car_52_vid_07_refPath.csv'
-            #     self.human_start_step = 170
-            #     self.robot_target_speed = 2
-            #     self.curr_robot_start_step = 43
-            #     self.range_radius = 1
-            #     self.statistics_file_name = "h_36_r_52_stanley"
-            #     self.max_t = 10
 
         elif scenario == "roundabout":
             if trial_name == "trial_1":
@@ -541,15 +519,6 @@ class SimulatorStanleyV2(SimulatorLQRHelper):
                 self.max_t = 10
                 self.statistics_file_name = "h_41_r_36_stanley"
                 self.range_radius = 10
-            # elif trial_name == "trial_2": # TODO: in this trial, the human car jumps! cannot use
-            #     self.huamn_car_file_name_roundabout = 'car_29.csv'
-            #     self.robot_car_file_name_roundabout = 'car_30_refPath.csv'
-            #     self.human_start_step = 0
-            #     self.robot_target_speed = 2
-            #     self.curr_robot_start_step = 57
-            #     self.max_t = 10
-            #     self.statistics_file_name = "h_29_r_30_stanley"
-            #     self.range_radius = 10
             elif trial_name == "trial_3":
                 self.huamn_car_file_name_roundabout = 'car_24.csv'
                 self.robot_car_file_name_roundabout = 'car_6_refPath.csv'
@@ -595,8 +564,6 @@ class SimulatorStanleyV2(SimulatorLQRHelper):
         ########################### Simulation over all options #################################################
         # Loop over all options
         for scenario in ["intersection", "roundabout"]:
-        # for scenario in ["intersection"]:
-        # for scenario in ["roundabout"]:
             # Configure scenario and load data
             if scenario == "intersection":
                 self.scenario = "intersection"
@@ -606,15 +573,11 @@ class SimulatorStanleyV2(SimulatorLQRHelper):
                 self.load_safe_data()
 
             # Loop over different trial and conditions
-            # for trial in ["trial_1", "trial_2", "trial_3"]:
-            # for trial in ["plot_trial_1"]:
             for trial in ["plot_trial_2"]:
                 # Reset trial trajectory file
                 self.reset_trial(trial_name=trial, scenario=scenario)
 
-                # for use_safe_control in [True, False]:
                 for use_safe_control in [True]:
-                    # for use_prediction in [True, False]:
                     for use_prediction in [True, False]:
 
                         # Have a list to store statistics
@@ -632,7 +595,7 @@ class SimulatorStanleyV2(SimulatorLQRHelper):
                         if (not self.use_safe_control) and (self.use_prediction):
                             continue
 
-                        # # For statistics, several start positions
+                        # # For statistics, simulate several different start positions
                         # for i in range(self.curr_robot_start_step - self.range_radius, self.curr_robot_start_step + self.range_radius + 1):
                         #     self.robot_start_step = i
                         #     self.simulate()
@@ -652,4 +615,4 @@ class SimulatorStanleyV2(SimulatorLQRHelper):
 
 
 if __name__ == "__main__":
-    SimulatorStanleyV2().main()
+    SimulatorStanley().main()

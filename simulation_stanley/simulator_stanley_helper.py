@@ -5,7 +5,7 @@ import pandas
 from prediction.predict_mode_v3 import PredictModeV3
 from prediction.process_prediction_v3 import ProcessPredictionV3
 
-class SimulatorLQRHelper(object):
+class SimulatorStanleyHelper(object):
 
     def __init__(self):
 
@@ -14,6 +14,10 @@ class SimulatorLQRHelper(object):
 
         self.file_dir_intersection = "/home/anjianl/Desktop/project/optimized_dp/data/intersection-data"
         self.file_dir_roundabout = "/home/anjianl/Desktop/project/optimized_dp/data/roundabout-data"
+
+        # Configure curbs map location
+        self.intersection_curbs = np.load("/home/anjianl/Desktop/project/optimized_dp/data/map/obstacle_map/intersection_curbs.npy")
+        self.roundabout_curbs = np.load("/home/anjianl/Desktop/project/optimized_dp/data/map/obstacle_map/roundabout_curbs.npy")
 
     def get_traj_from_prediction(self, scenario, filename):
 
