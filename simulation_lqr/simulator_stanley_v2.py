@@ -85,6 +85,7 @@ class SimulatorStanleyV2(SimulatorLQRHelper):
         curr_step = 0
         min_dist = 100
         max_deviation = 0
+        max_deviation_list = []
 
         time_use_reldyn5d_control = 0
         time_use_bicycl4d_control = 0
@@ -166,6 +167,7 @@ class SimulatorStanleyV2(SimulatorLQRHelper):
             curr_min_dist = np.sqrt(rel_states['x_rel'] ** 2 + rel_states['y_rel'] ** 2)
             min_dist = min(curr_min_dist, min_dist)
             # print("minimum car distance is", min_dist)
+            max_deviation_list.append(max_deviation)
 
             # check goal ###########################################################################################################
             dx = RobotCar.x - robot_goal[0]
@@ -207,6 +209,9 @@ class SimulatorStanleyV2(SimulatorLQRHelper):
             end_time = time.time()
             print("this step takes", end_time - start_time, "s")
 
+        # Make sure the len of max_deviation consistent with others
+        max_deviation_list.insert(0, max_deviation_list[0])
+
         # Save trajectory ##########################################################################################################
         if self.save_trajectory:
             robot_traj = {}
@@ -215,19 +220,20 @@ class SimulatorStanleyV2(SimulatorLQRHelper):
             robot_traj["psi_r"] = psi_r_list
             robot_traj["v_r"] = v_r_list
             robot_traj["t"] = t_list
+            robot_traj["max_deviation"] = max_deviation_list
 
             if self.use_safe_control and self.use_prediction:
                 if self.scenario == "intersection":
-                    output_robot = open("/home/anjianl/Desktop/project/optimized_dp/result/plot_trajectory/intersection/2/pred_robot.csv", 'wb')
+                    output_robot = open("/home/anjianl/Desktop/project/optimized_dp/result/plot_trajectory/intersection/1104/pred_robot.csv", 'wb')
                 elif self.scenario == "roundabout":
-                    output_robot = open("/home/anjianl/Desktop/project/optimized_dp/result/plot_trajectory/roundabout/2/pred_robot.csv", 'wb')
+                    output_robot = open("/home/anjianl/Desktop/project/optimized_dp/result/plot_trajectory/roundabout/1104/pred_robot.csv", 'wb')
             elif self.use_safe_control and not self.use_prediction:
                 if self.scenario == "intersection":
                     output_robot = open(
-                        "/home/anjianl/Desktop/project/optimized_dp/result/plot_trajectory/intersection/2/nopred_robot.csv", 'wb')
+                        "/home/anjianl/Desktop/project/optimized_dp/result/plot_trajectory/intersection/1104/nopred_robot.csv", 'wb')
                 elif self.scenario == "roundabout":
                     output_robot = open(
-                        "/home/anjianl/Desktop/project/optimized_dp/result/plot_trajectory/roundabout/2/nopred_robot.csv",
+                        "/home/anjianl/Desktop/project/optimized_dp/result/plot_trajectory/roundabout/1104/nopred_robot.csv",
                         'wb')
 
             pickle.dump(robot_traj, output_robot)
@@ -243,16 +249,16 @@ class SimulatorStanleyV2(SimulatorLQRHelper):
 
             if self.use_safe_control and self.use_prediction:
                 if self.scenario == "intersection":
-                    output_human = open("/home/anjianl/Desktop/project/optimized_dp/result/plot_trajectory/intersection/2/pred_human.csv", 'wb')
+                    output_human = open("/home/anjianl/Desktop/project/optimized_dp/result/plot_trajectory/intersection/1104/pred_human.csv", 'wb')
                 elif self.scenario == "roundabout":
-                    output_human = open("/home/anjianl/Desktop/project/optimized_dp/result/plot_trajectory/roundabout/2/pred_human.csv", 'wb')
+                    output_human = open("/home/anjianl/Desktop/project/optimized_dp/result/plot_trajectory/roundabout/1104/pred_human.csv", 'wb')
             elif self.use_safe_control and not self.use_prediction:
                 if self.scenario == "intersection":
                     output_human = open(
-                        "/home/anjianl/Desktop/project/optimized_dp/result/plot_trajectory/intersection/2/nopred_human.csv", 'wb')
+                        "/home/anjianl/Desktop/project/optimized_dp/result/plot_trajectory/intersection/1104/nopred_human.csv", 'wb')
                 elif self.scenario == "roundabout":
                     output_human = open(
-                        "/home/anjianl/Desktop/project/optimized_dp/result/plot_trajectory/roundabout/2/nopred_human.csv", 'wb')
+                        "/home/anjianl/Desktop/project/optimized_dp/result/plot_trajectory/roundabout/1104/nopred_human.csv", 'wb')
             pickle.dump(human_traj, output_human)
             output_human.close()
             print("human trajectory saved!")
@@ -443,8 +449,8 @@ class SimulatorStanleyV2(SimulatorLQRHelper):
             self.show_animation = True
             # self.show_animation = False
 
-            self.save_plot = True
-            # self.save_plot = False
+            # self.save_plot = True
+            self.save_plot = False
             self.fig_save_dir = "/home/anjianl/Desktop/project/optimized_dp/result/simulation/1024/intersection/"
             self.figure_file_name = "plot_trial"
 
@@ -461,8 +467,8 @@ class SimulatorStanleyV2(SimulatorLQRHelper):
             self.show_animation = True
             # self.show_animation = False
 
-            self.save_plot = True
-            # self.save_plot = False
+            # self.save_plot = True
+            self.save_plot = False
             self.fig_save_dir = "/home/anjianl/Desktop/project/optimized_dp/result/simulation/1024/roundabout/"
             self.figure_file_name = "plot_trial"
 
@@ -471,7 +477,8 @@ class SimulatorStanleyV2(SimulatorLQRHelper):
             self.save_statistics = False
             self.statistics_file_dir = "/home/anjianl/Desktop/project/optimized_dp/result/statistics/1013/roundabout/"
 
-            self.save_trajectory = False
+            self.save_trajectory = True
+            # self.save_trajectory = False
 
         # reset trial trajectory ##############################################################################################
         if scenario == "intersection":
@@ -505,7 +512,7 @@ class SimulatorStanleyV2(SimulatorLQRHelper):
                 self.max_t = 10
                 self.statistics_file_name = "h_20_r_36_stanley"
                 self.range_radius = 10
-            elif trial_name == "plot_trial_1":
+            elif trial_name == "plot_trial_2":
                 self.huamn_car_file_name_intersection = 'car_36_vid_11.csv'
                 self.robot_car_file_name_intersection = 'car_52_vid_07_refPath.csv'
                 self.human_start_step = 170
@@ -514,15 +521,15 @@ class SimulatorStanleyV2(SimulatorLQRHelper):
                 self.range_radius = 1
                 self.statistics_file_name = "h_36_r_52_stanley"
                 self.max_t = 10
-            elif trial_name == "plot_trial_2":
-                self.huamn_car_file_name_intersection = 'car_36_vid_11.csv'
-                self.robot_car_file_name_intersection = 'car_52_vid_07_refPath.csv'
-                self.human_start_step = 170
-                self.robot_target_speed = 2
-                self.curr_robot_start_step = 43
-                self.range_radius = 1
-                self.statistics_file_name = "h_36_r_52_stanley"
-                self.max_t = 10
+            # elif trial_name == "plot_trial_2":
+            #     self.huamn_car_file_name_intersection = 'car_36_vid_11.csv'
+            #     self.robot_car_file_name_intersection = 'car_52_vid_07_refPath.csv'
+            #     self.human_start_step = 170
+            #     self.robot_target_speed = 2
+            #     self.curr_robot_start_step = 43
+            #     self.range_radius = 1
+            #     self.statistics_file_name = "h_36_r_52_stanley"
+            #     self.max_t = 10
 
         elif scenario == "roundabout":
             if trial_name == "trial_1":
@@ -587,8 +594,8 @@ class SimulatorStanleyV2(SimulatorLQRHelper):
         ###################################################################################################
         ########################### Simulation over all options #################################################
         # Loop over all options
-        # for scenario in ["intersection", "roundabout"]:
-        for scenario in ["intersection"]:
+        for scenario in ["intersection", "roundabout"]:
+        # for scenario in ["intersection"]:
         # for scenario in ["roundabout"]:
             # Configure scenario and load data
             if scenario == "intersection":
