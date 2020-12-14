@@ -3,8 +3,8 @@ import numpy as np
 import time
 import sys
 
-from prediction.process_prediction_v3 import ProcessPredictionV3
-from prediction.predict_mode_v3 import PredictModeV3
+from prediction.process_prediction import ProcessPrediction
+from prediction.predict_mode import PredictMode
 from skimage import measure
 from scipy.interpolate import RegularGridInterpolator
 

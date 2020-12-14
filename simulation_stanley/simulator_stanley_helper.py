@@ -2,8 +2,8 @@ import numpy as np
 
 import pandas
 
-from prediction.predict_mode_v3 import PredictModeV3
-from prediction.process_prediction_v3 import ProcessPredictionV3
+from prediction.predict_mode import PredictMode
+from prediction.process_prediction import ProcessPrediction
 
 class SimulatorStanleyHelper(object):
 
@@ -106,15 +106,15 @@ class SimulatorStanleyHelper(object):
             traj_to_pred['v_t'] = np.asarray(human_car_traj['v_t'][curr_step_human:])
 
         length = len(traj_to_pred['v_t']) - 1
-        # raw_acc_list, raw_omega_list = ProcessPredictionV3().get_action_v_profile([traj_to_pred], poly_traj)
-        raw_acc_list = [(traj_to_pred['v_t'][1:length] - traj_to_pred['v_t'][0:length - 1]) / ProcessPredictionV3().time_step]
-        raw_omega_list = [(traj_to_pred['psi_t'][1:length] - traj_to_pred['psi_t'][0:length - 1]) / ProcessPredictionV3().time_step]
+        # raw_acc_list, raw_omega_list = ProcessPrediction().get_action_v_profile([traj_to_pred], poly_traj)
+        raw_acc_list = [(traj_to_pred['v_t'][1:length] - traj_to_pred['v_t'][0:length - 1]) / ProcessPrediction().time_step]
+        raw_omega_list = [(traj_to_pred['psi_t'][1:length] - traj_to_pred['psi_t'][0:length - 1]) / ProcessPrediction().time_step]
 
-        filter_acc_list, filter_omega_list = PredictModeV3().filter_action(raw_acc_list, raw_omega_list)
+        filter_acc_list, filter_omega_list = PredictMode().filter_action(raw_acc_list, raw_omega_list)
 
         filter_acc, filter_omega = filter_acc_list[0], filter_omega_list[0]
 
-        mode_num_list, mode_probability_list = PredictModeV3().get_mode(filter_acc, filter_omega)
+        mode_num_list, mode_probability_list = PredictMode().get_mode(filter_acc, filter_omega)
 
         if mode_num_list[0] == 0:
             mode_name = "decelerate"
