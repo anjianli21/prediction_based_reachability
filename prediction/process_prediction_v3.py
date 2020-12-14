@@ -7,7 +7,7 @@ import copy
 import sys
 
 
-class ProcessPredictionV3(object):
+class ProcessPrediction(object):
 
     def __init__(self):
 
@@ -474,4 +474,4 @@ class ProcessPredictionV3(object):
         return filename_action_feature_list
 
 if __name__ == "__main__":
-    ProcessPredictionV3().collect_action_from_group()
+    ProcessPrediction().collect_action_from_group()

@@ -9,12 +9,12 @@ import math
 import sys
 sys.path.append("/Users/anjianli/Desktop/robotics/project/optimized_dp")
 
-from prediction.clustering_v3 import ClusteringV3
-from prediction.process_prediction_v3 import ProcessPredictionV3
+from prediction.clustering import Clustering
+from prediction.process_prediction import ProcessPrediction
 
 import pandas as pd
 
-class PredictModeV3(object):
+class PredictMode(object):
 
     def __init__(self):
 
@@ -61,7 +61,7 @@ class PredictModeV3(object):
 
         # Format of action_bound_mode is
         # [Mode name, acc_min, acc_max, omega_min, omega_max]
-        # self.action_bound_mode = ClusteringV3().get_clustering()
+        # self.action_bound_mode = Clustering().get_clustering()
         # Based on previous clustering results, we can directly use here
         self.action_bound_mode = [['Mode 0', -2.1636535520436913, -0.513334427671972, -0.1837438265538242, 0.14882615871461266],
                                   ['Mode 1', -0.5555900044464422, 0.6368061679286323, -0.10672453116249359, 0.0937009227063485],
@@ -103,7 +103,7 @@ class PredictModeV3(object):
                             figure_name = "roundabout_" + file + "_plot{:d}".format(i) + ".png"
                     # Previous file_path
                     # file_path = "/Users/anjianli/Desktop/robotics/project/optimized_dp/result/poly_{:d}/{:d}_timesteps/predict_mode/".format(
-                    #     ProcessPredictionV3().degree, ProcessPredictionV3().mode_time_span)
+                    #     ProcessPrediction().degree, ProcessPrediction().mode_time_span)
                     # 0915 file path
                     file_path = "/Users/anjianli/Desktop/robotics/project/prediction-reachability/prediction/0915/"
                     figure_path_name = file_path + figure_name
@@ -121,24 +121,24 @@ class PredictModeV3(object):
             traj_file_name = self.file_dir_predict + '/' + self.file_name_predict[index]
             # print("the traj file to predict is", traj_file_name)
 
-            traj_file = ProcessPredictionV3().read_prediction(file_name=traj_file_name)
+            traj_file = ProcessPrediction().read_prediction(file_name=traj_file_name)
         else:
             traj_file_name = self.file_dir_predict + '/' + traj_file_pred
             # print("the traj file to predict is", traj_file_name)
 
-            traj_file = ProcessPredictionV3().read_prediction(file_name=traj_file_name)
+            traj_file = ProcessPrediction().read_prediction(file_name=traj_file_name)
 
-        raw_traj = ProcessPredictionV3().extract_traj(traj_file)
+        raw_traj = ProcessPrediction().extract_traj(traj_file)
 
         # Fit polynomial for x, y position: x(t), y(t)
-        poly_traj = ProcessPredictionV3().fit_polynomial_traj(raw_traj)
+        poly_traj = ProcessPrediction().fit_polynomial_traj(raw_traj)
 
-        if ProcessPredictionV3().use_velocity:
+        if ProcessPrediction().use_velocity:
             # Get the acc from velocity profile provided
-            raw_acc_list, raw_omega_list = ProcessPredictionV3().get_action_v_profile(raw_traj, poly_traj)
+            raw_acc_list, raw_omega_list = ProcessPrediction().get_action_v_profile(raw_traj, poly_traj)
         else:
             # Get raw actions from poly_traj, here acc and omega are extracted from both poly_traj
-            raw_acc_list, raw_omega_list = ProcessPredictionV3().get_action_poly(poly_traj)
+            raw_acc_list, raw_omega_list = ProcessPrediction().get_action_poly(poly_traj)
 
         return raw_acc_list, raw_omega_list
 
@@ -148,11 +148,11 @@ class PredictModeV3(object):
         filter_omega_list = []
 
         for i in range(len(raw_acc_list)):
-            if np.shape(raw_acc_list[i])[0] < ProcessPredictionV3().mode_time_span:
+            if np.shape(raw_acc_list[i])[0] < ProcessPrediction().mode_time_span:
                 print("not qualified", np.shape(raw_acc_list[i])[0])
                 continue
             # print("raw omega", raw_omega_list[i])
-            acc_interpolate, omega_interpolate = ProcessPredictionV3().to_interpolate(raw_acc_list[i], raw_omega_list[i], mode="prediction")
+            acc_interpolate, omega_interpolate = ProcessPrediction().to_interpolate(raw_acc_list[i], raw_omega_list[i], mode="prediction")
             # print("acc size", np.shape(acc_interpolate)[0])
             # print("filter omega", omega_interpolate)
             filter_acc_list.append(acc_interpolate)
@@ -166,9 +166,9 @@ class PredictModeV3(object):
         mode_num_list = []
         mode_probability_list = []
         for i in range(np.shape(raw_acc)[0]):
-            if i + ProcessPredictionV3().mode_time_span <= np.shape(raw_acc)[0]:
-                curr_mode_num, curr_mode_probability = self.decide_mode(raw_acc[i:i + ProcessPredictionV3().mode_time_span],
-                                                                raw_omega[i:i + ProcessPredictionV3().mode_time_span])
+            if i + ProcessPrediction().mode_time_span <= np.shape(raw_acc)[0]:
+                curr_mode_num, curr_mode_probability = self.decide_mode(raw_acc[i:i + ProcessPrediction().mode_time_span],
+                                                                raw_omega[i:i + ProcessPrediction().mode_time_span])
                 # print(curr_mode_str)
                 mode_num_list.append(curr_mode_num)
                 mode_probability_list.append(curr_mode_probability)
@@ -187,16 +187,16 @@ class PredictModeV3(object):
         Here, we will compute the shortest distance to the boundary
         """
 
-        if (np.shape(acc)[0] != ProcessPredictionV3().mode_time_span) or (np.shape(omega)[0] != ProcessPredictionV3().mode_time_span):
+        if (np.shape(acc)[0] != ProcessPrediction().mode_time_span) or (np.shape(omega)[0] != ProcessPrediction().mode_time_span):
             print("prediction dimension is wrong")
             return 0
 
         acc_mean = np.mean(acc)
         omega_mean = np.mean(omega)
 
-        # mode_probability = np.zeros((ClusteringV3().clustering_num))
-        mode_probability = [0] * ClusteringV3().clustering_num
-        for i in range(ClusteringV3().clustering_num):
+        # mode_probability = np.zeros((Clustering().clustering_num))
+        mode_probability = [0] * Clustering().clustering_num
+        for i in range(Clustering().clustering_num):
             if (self.action_bound_mode[i][1] <= acc_mean <= self.action_bound_mode[i][2]) and (self.action_bound_mode[i][3] <= omega_mean <= self.action_bound_mode[i][4]):
                 # Assign the shortest distance to the boundary to
                 shortest_dist = np.min([np.abs(acc_mean - self.action_bound_mode[i][1]),
@@ -205,7 +205,7 @@ class PredictModeV3(object):
                                         np.abs(omega_mean - self.action_bound_mode[i][4])])
                 if shortest_dist == 0:
                     mode_probability[i] = 1
-                    for j in range(i+1, ClusteringV3().clustering_num):
+                    for j in range(i+1, Clustering().clustering_num):
                         mode_probability[j] = 0
                     return i, mode_probability
                 else:
@@ -247,8 +247,8 @@ class PredictModeV3(object):
         # ax1.set_title('0: right turn, 1: stable, 2: decelerate, 3: left turn, 4: accelerate, -1: other')
 
         locs, labels = plt.xticks()
-        plt.xticks(np.arange(0, np.shape(mode_num_list)[0], step=ProcessPredictionV3().mode_time_span))
-        plt.yticks(np.arange(-1, ClusteringV3().clustering_num, step=1))
+        plt.xticks(np.arange(0, np.shape(mode_num_list)[0], step=ProcessPrediction().mode_time_span))
+        plt.yticks(np.arange(-1, Clustering().clustering_num, step=1))
 
         # Plot acceleration raw data
         ax2 = fig.add_subplot(312, sharex=ax1)
@@ -261,7 +261,7 @@ class PredictModeV3(object):
         ax3 = fig.add_subplot(313, sharex=ax1)
         ax3.plot(time_index, omega, 'o-', label="angular speed")
         ax3.set_ylabel('angular speed')
-        label_name = "bound: acc:[-5, 3], ang_v: [-pi/6, pi/6]" + str(ProcessPredictionV3().mode_time_span) + "time span"
+        label_name = "bound: acc:[-5, 3], ang_v: [-pi/6, pi/6]" + str(ProcessPrediction().mode_time_span) + "time span"
         ax3.set_xlabel(label_name)
         # plt.yticks(np.arange(-math.pi/6, math.pi/6, step=math.pi/15))
 
@@ -283,4 +283,4 @@ class PredictModeV3(object):
 
 
 if __name__ == "__main__":
-    PredictModeV3().predict_mode()
+    PredictMode().predict_mode()
