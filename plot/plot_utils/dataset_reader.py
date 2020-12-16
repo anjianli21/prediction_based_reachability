@@ -2,7 +2,7 @@
 
 import csv
 
-from plot_utils.dataset_types import MotionState, Track
+from plot.plot_utils.dataset_types import MotionState, Track
 
 
 class Key:

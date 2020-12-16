@@ -2,9 +2,9 @@ import heterocl as hcl
 import numpy as np
 import math
 
-from helper.helper_math import my_atan
-from helper.helper_math import my_abs
-from helper.helper_math import my_min
+from reachable_tube.helper.helper_math import my_atan
+from reachable_tube.helper.helper_math import my_abs
+from reachable_tube.helper.helper_math import my_min
 
 class Bicycle_4D:
     """

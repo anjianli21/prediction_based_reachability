@@ -8,11 +8,11 @@ import pickle
 import math
 from PIL import Image
 
-from simulation_stanley.stanley_control import *
-from simulation_stanley.simulator_stanley_helper import SimulatorStanleyHelper
-from simulation_stanley.human_car import HumanState
-from simulation_stanley.optimal_control_reldyn5d import OptimalControlRelDyn5D
-from simulation_stanley.optimal_control_bicycle4d import OptimalControlBicycle4D
+from simulation.simulation_stanley.stanley_control import *
+from simulation.simulation_stanley.simulator_stanley_helper import SimulatorStanleyHelper
+from simulation.simulation_stanley.human_car import HumanState
+from simulation.simulation_stanley.optimal_control_reldyn5d import OptimalControlRelDyn5D
+from simulation.simulation_stanley.optimal_control_bicycle4d import OptimalControlBicycle4D
 
 class SimulatorStanley(SimulatorStanleyHelper):
 

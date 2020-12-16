@@ -1,8 +1,6 @@
 import sys
 sys.path.append("/home/anjianl/Desktop/project/optimized_dp")
 
-from plot_utils import map_vis_without_lanelet
-
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
@@ -12,11 +10,10 @@ import argparse
 
 from matplotlib.widgets import Button
 
-from plot_utils import dataset_reader
-from plot_utils import dataset_types
-from plot_utils import map_vis_lanelet2
-from plot_utils import tracks_vis
-from plot_utils import dict_utils
+from plot.plot_utils import dataset_reader
+from plot.plot_utils import tracks_vis
+from plot.plot_utils import dict_utils, map_vis_lanelet2, dataset_types, map_vis_without_lanelet
+
 
 class PlotTrajShade(object):
 

@@ -13,7 +13,7 @@ sys.path.append("../../PathPlanning/CubicSpline/")
 sys.path.append("/home/anjianl/Desktop/project/optimized_dp/")
 
 try:
-    from simulation_stanley import cubic_spline_planner
+    from simulation.simulation_stanley import cubic_spline_planner
 except:
     raise
 
