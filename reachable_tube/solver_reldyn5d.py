@@ -6,7 +6,7 @@ import os
 
 from reachable_tube.computeGraphs.CustomGraphFunctions import *
 from reachable_tube.Plots.plotting_utilities import *
-from reachable_tube.user_definer_reldyn5d import *
+from reachable_tube.user_definer import *
 from argparse import ArgumentParser
 from reachable_tube.computeGraphs.graph_4D import *
 from reachable_tube.computeGraphs.graph_5D import *
@@ -35,13 +35,13 @@ def main():
 
     ################# Obtain and reset the action bound for each round of computation #################
     # Get the action bound for each mode
-    # action_bound_mode = ClusteringV3().get_clustering()
-    action_bound_mode = PredictModeV3().action_bound_mode
-    omega_bound, acc_bound = ProcessPredictionV3().omega_bound, ProcessPredictionV3().acc_bound
+    # action_bound_mode = Clustering().get_clustering()
+    action_bound_mode = PredictMode().action_bound_mode
+    omega_bound, acc_bound = ProcessPrediction().omega_bound, ProcessPrediction().acc_bound
 
     # A bigger loop than the main loop
     # This loops over different driving mode and set different action bound # TODO choose where to start
-    for mode_num in range(-1, ClusteringV3().clustering_num):
+    for mode_num in range(-1, Clustering().clustering_num):
         # Reset the my_car object and pass it into main loop
         # Disturbances: w_h, a_h
 

@@ -6,7 +6,7 @@ import os
 
 from reachable_tube.computeGraphs.CustomGraphFunctions import *
 from reachable_tube.Plots.plotting_utilities import *
-from reachable_tube.user_definer_bicycle4d import *
+from reachable_tube.user_definer import *
 from argparse import ArgumentParser
 from reachable_tube.computeGraphs.graph_4D import *
 from reachable_tube.computeGraphs.graph_5D import *

@@ -28,24 +28,23 @@ This codebase contains three parts:
 
 1. Process the predicted trajectory data and cluster it into different driving mode, which includes:
 ```
-~/prediction/
+prediction/
 
 ```
 
 2. Simulate the two-car collision avoidance
 ```
-~/simulation_stanley/
-~/simulation_helper/
+simulation/
 ```
 
 3. Compute reachable tubes for each driving mode
 ```
-rest of the code
+reachable_tube/
 ```
 
 ## Trajectory processing, driving mode clustering and mode prediction
 
-First, configure the data path in "def __init__(self): " in both process_prediction.py and predict_mode.py.
+First, configure the data path in "def __init__(self): " in both prediction/process_prediction.py and prediction/predict_mode.py.
 
 1. Process the predicted trajectory data and obtain actions:
 ```
@@ -68,26 +67,29 @@ python prediction/predict_mode.py
 ## Reachable tube computation
 
 1. Compute reachable tube for 5d relative dynamics
+In reachable_tube/user_definer.py, comment the bicycle4D part and leave reldyn5D part, then
+
 ```
-python solver_reldyn5d.py
+python reachable_tube/solver_reldyn5d.py
 
 ```
 
 2. Compute reachable tube for 4d bicycle dynamics (for curbs)
+In reachable_tube/user_definer.py, comment the reldyn5D part and leave bicycle4D part, then
 ```
-python solver_bicycle4d.py
+python reachable_tube/solver_bicycle4d.py
 
 ```
 
 ## Simulation
 
-Configure the data path in "def __init__(self):" in simulator_stanley_helper.py.
+Configure the data path in "def __init__(self):" in simulation/simulator_stanley_helper.py.
 
-Configure the scenario and trial that you want to simulate in "def reset_trial(self, trial_name, scenario):" in simulator_stanley.py.
+Configure the scenario and trial that you want to simulate in "def reset_trial(self, trial_name, scenario):" in simulation/simulator_stanley.py.
 
 Run the simulation:
 ```
-python simulator_stanley.py
+python simulation/simulator_stanley.py
 
 ```
 

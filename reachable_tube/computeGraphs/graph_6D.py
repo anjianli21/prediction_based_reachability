@@ -2,7 +2,7 @@ import heterocl as hcl
 import numpy as np
 import time
 from reachable_tube.computeGraphs.CustomGraphFunctions import *
-from user_definer import *
+from reachable_tube.user_definer import *
 
 ##############################  6D DERIVATIVE FUNCTIONS #############################
 def spa_derivX6_6d(i, j, k, l, m, n, V, g):  # Left -> right == Outer Most -> Inner Most

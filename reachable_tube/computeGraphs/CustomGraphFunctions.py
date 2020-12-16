@@ -1,7 +1,8 @@
 import heterocl as hcl
 import numpy as np
 import time
-from user_definer import *
+from reachable_tube.user_definer import *
+
 # Custom function
 
 def my_min(a,b):
