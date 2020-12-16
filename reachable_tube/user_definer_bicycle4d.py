@@ -1,13 +1,13 @@
 import numpy as np
-from Grid.GridProcessing import grid
-from Shapes.ShapesFunctions import *
+from reachable_tube.Grid.GridProcessing import grid
+from reachable_tube.Shapes.ShapesFunctions import *
 
 # Specify the  file that includes dynamic systems
-from dynamics.Humannoid6D_sys1 import *
-from dynamics.DubinsCar4D import *
-from dynamics.DubinsCar import *
-from dynamics.RelDyn5D import *
-from dynamics.Bicycle4D import *
+from reachable_tube.dynamics.Humannoid6D_sys1 import *
+from reachable_tube.dynamics.DubinsCar4D import *
+from reachable_tube.dynamics.DubinsCar import *
+from reachable_tube.dynamics.RelDyn5D import *
+from reachable_tube.dynamics.Bicycle4D import *
 import scipy.io as sio
 from matplotlib import pyplot as plt
 

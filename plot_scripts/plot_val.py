@@ -2,11 +2,11 @@ import sys
 sys.path.append("/Users/anjianli/Desktop/robotics/project/optimized_dp")
 
 import numpy as np
-from Grid.GridProcessing import grid
-from Shapes.ShapesFunctions import *
+from reachable_tube.Grid.GridProcessing import grid
+from reachable_tube.Shapes.ShapesFunctions import *
 
 # Specify the  file that includes dynamic systems
-from Plots.plotting_utilities import *
+from reachable_tube.Plots.plotting_utilities import *
 
 import math
 

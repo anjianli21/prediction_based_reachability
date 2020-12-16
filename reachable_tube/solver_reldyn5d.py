@@ -4,13 +4,13 @@ import time
 #import plotly.graph_objects as go
 import os
 
-from computeGraphs.CustomGraphFunctions import *
-from Plots.plotting_utilities import *
-from user_definer_reldyn5d import *
+from reachable_tube.computeGraphs.CustomGraphFunctions import *
+from reachable_tube.Plots.plotting_utilities import *
+from reachable_tube.user_definer_reldyn5d import *
 from argparse import ArgumentParser
-from computeGraphs.graph_4D import *
-from computeGraphs.graph_5D import *
-from computeGraphs.graph_6D import *
+from reachable_tube.computeGraphs.graph_4D import *
+from reachable_tube.computeGraphs.graph_5D import *
+from reachable_tube.computeGraphs.graph_6D import *
 import scipy.io as sio
 
 import matplotlib.pyplot as plt

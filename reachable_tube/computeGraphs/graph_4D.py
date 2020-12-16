@@ -1,7 +1,7 @@
 import heterocl as hcl
 import numpy as np
 import time
-from computeGraphs.CustomGraphFunctions import *
+from reachable_tube.computeGraphs.CustomGraphFunctions import *
 from user_definer import *
 
 ################## 4D SPATIAL DERIVATIVE FUNCTION #################
